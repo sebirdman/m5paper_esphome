@@ -13,6 +13,15 @@ esphome:
       - delay: 100ms
       - component.update: m5paper_display
 
+
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/sebirdman/m5paper_esphome
+      ref: main
+    components: [ bm8563, gt911, it8951e, m5paper, spi ]
+    
 # Enable logging
 logger:
 
