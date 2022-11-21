@@ -1,6 +1,8 @@
 # m5paper_esphome
 
-Work in progress, see example.yaml for instructions
+Based on https://github.com/sebirdman/m5paper_esphome
+
+Work in progress
 
 All components are functional, but likely have bugs. 
 
