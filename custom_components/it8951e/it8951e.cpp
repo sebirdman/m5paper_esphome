@@ -293,8 +293,8 @@ void IT8951ESensor::write_display() {
 
  //this->write_command(IT8951_TCON_SYS_RUN);
  this->write_buffer_to_display(0, 0, this->max_x, this->max_y, this->buffer_);
- this->update_area(0, 0, this->max_x, this->max_y, UPDATE_MODE_DU4);
-
+ this->update_area(0, 0, this->max_x, this->max_y, UPDATE_MODE_GC16);
+ //this->update_area(0, 0, this->max_x, this->max_y, UPDATE_MODE_DU4);
  this->max_x = 0;
  this->max_y = 0;
  //this->write_command(IT8951_TCON_SLEEP);
@@ -335,7 +335,8 @@ void IT8951ESensor::update() {
 
 void HOT IT8951ESensor::draw_absolute_pixel_internal(int x, int y, Color color) {
   if (x >= this->get_width_internal() || y >= this->get_height_internal() || x < 0 || y < 0) {
-    ESP_LOGE(TAG, "Drawing outside the screen size!");
+    // Removed to avoid too much logging    
+    // ESP_LOGE(TAG, "Drawing outside the screen size!");
     return;
   }
 

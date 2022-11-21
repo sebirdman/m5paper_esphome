@@ -30,7 +30,7 @@ void BM8563::dump_config(){
 }
 
 void BM8563::set_sleep_duration(uint32_t time_s) {
-  ESP_LOGE(TAG, "Sleep Duration Setting to: %u ms", time_s);
+  ESP_LOGI(TAG, "Sleep Duration Setting to: %u ms", time_s);
   this->sleep_duration_ = time_s;
 }
 
@@ -71,7 +71,7 @@ void BM8563::read_time() {
   BM8563_DateTypeDef BM8563_DateStruct;
   getTime(&BM8563_TimeStruct);
   getDate(&BM8563_DateStruct);
-  ESP_LOGE(TAG, "BM8563: %i-%i-%i %i, %i:%i:%i", 
+  ESP_LOGD(TAG, "BM8563: %i-%i-%i %i, %i:%i:%i", 
     BM8563_DateStruct.year,
     BM8563_DateStruct.month,
     BM8563_DateStruct.day,
@@ -148,7 +148,7 @@ void BM8563::getDate(BM8563_DateTypeDef* BM8563_DateStruct) {
   BM8563_DateStruct->month   = bcd2ToByte(buf[2] & 0x1f);
 
   uint8_t year_byte = bcd2ToByte(buf[3] & 0xff);
-  ESP_LOGE(TAG, "Year byte is %i", year_byte);
+  ESP_LOGD(TAG, "Year byte is %i", year_byte);
   if (buf[2] & 0x80) {
     BM8563_DateStruct->year = 1900 + year_byte;
   } else {
@@ -174,7 +174,7 @@ void BM8563::setDate(BM8563_DateTypeDef* BM8563_DateStruct) {
     buf[2] = byteToBcd2(BM8563_DateStruct->month) | 0x00;
   }
 
-  ESP_LOGE(TAG, "WRiting year is %i", buf[3]);
+  ESP_LOGI(TAG, "WRiting year is %i", buf[3]);
   this->write_register(0x05, buf, 4);
 }
 
@@ -189,7 +189,7 @@ uint8_t BM8563::ReadReg(uint8_t reg) {
 }
 
 int BM8563::SetAlarmIRQ(int afterSeconds) {
-  ESP_LOGE(TAG, "Sleep Duration: %u ms", afterSeconds);
+  ESP_LOGI(TAG, "Sleep Duration: %u ms", afterSeconds);
   uint8_t reg_value = 0;
   reg_value = ReadReg(0x01);
 
