@@ -2,6 +2,8 @@
 
 Based on https://github.com/sebirdman/m5paper_esphome
 
+![Screen example](./img/screen_demo.jpg)
+
 Work in progress
 
 All components are functional, but likely have bugs. 
