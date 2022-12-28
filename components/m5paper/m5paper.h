@@ -9,6 +9,7 @@
 #include "driver/adc.h"
 #include "soc/adc_channel.h"
 #include <esp_adc_cal.h>
+#define BAT_ADC_CHANNEL ADC1_GPIO35_CHANNEL
 #endif
 
 namespace esphome {
