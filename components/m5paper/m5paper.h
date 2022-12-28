@@ -4,10 +4,10 @@
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/core/gpio.h"
 #include "esphome/core/automation.h"
-#include "soc/adc_channel.h"
 
 #ifdef USE_ESP32
 #include "driver/adc.h"
+#include "soc/adc_channel.h"
 #include <esp_adc_cal.h>
 #endif
 
