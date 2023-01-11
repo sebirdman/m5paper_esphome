@@ -1,5 +1,6 @@
 #include "esphome/core/log.h"
 #include "m5paper.h"
+#include "soc/adc_channel.h"
 
 namespace esphome {
 namespace m5paper {

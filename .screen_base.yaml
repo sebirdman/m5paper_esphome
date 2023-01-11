@@ -183,11 +183,7 @@ display:
     update_interval: never
     lambda: |-
       // Clock
-      try
-      {
-        it.strftime(25, 420, id(clock_font), "%H:%M", id(rtc_time).now());
-      }
-      catch(...) {};
+      it.strftime(25, 420, id(clock_font), "%H:%M", id(rtc_time).now());
       // Weather icon
       Color weather_icon_color;
       weather_icon_color.raw_32 = 0x0D;
@@ -215,64 +211,60 @@ display:
       #else
       std::string conditions = id(weather_conditions).state;
       #endif
-      try
+      std::string img = id(material_icons_map)["mdi-cloud-question"];
+      if (conditions == "clear-night")
       {
-        std::string img = id(material_icons_map)["mdi-cloud-question"];
-        if (conditions == "clear-night")
-        {
-            conditions = "clear";
-            img = id(material_icons_map)["mdi-weather-night"];
-        }
-        else if (conditions == "cloudy")
-            img = id(material_icons_map)["mdi-weather-cloudy"];
-        else if (conditions == "exceptional")
-            img = id(material_icons_map)["mdi-weather-cloudy-alert"];
-        else if (conditions == "fog")
-            img = id(material_icons_map)["mdi-weather-fog"];
-        else if (conditions == "hail")
-            img = id(material_icons_map)["mdi-weather-hail"];
-        else if (conditions == "lightning-rainy")
-        {
-            conditions = "thunderstorm";
-            img = id(material_icons_map)["mdi-weather-lightning-rainy"];
-        }
-        else if (conditions == "lightning")
-            img = id(material_icons_map)["mdi-weather-lightning"];
-        else if (conditions == "partlycloudy")
-        {
-            bool is_night = id(sun_position).state == "below_horizon";
-            if (is_night)
-                img = id(material_icons_map)["mdi-weather-night-partly-cloudy"];
-            else
-                img = id(material_icons_map)["mdi-weather-partly-cloudy"];
-            conditions = "partly cloudy";
-        }
-        else if (conditions == "pouring")
-        {
-            img = id(material_icons_map)["mdi-weather-pouring"];
-            conditions = "shower";
-        }
-        else if (conditions == "rainy")
-            img = id(material_icons_map)["mdi-weather-rainy"];
-        else if (conditions == "snowy-rainy")
-        {
-            img = id(material_icons_map)["mdi-weather-snowy-rainy"];
-            conditions = "sleet";
-        }
-        else if (conditions == "snowy")
-            img = id(material_icons_map)["mdi-weather-snowy"];
-        else if (conditions == "sunny")
-            img = id(material_icons_map)["mdi-weather-sunny"];
-        else if (conditions == "windy")
-            img = id(material_icons_map)["mdi-weather-windy"];
-        else if (conditions == "windy-variant")
-        {
-            img = id(material_icons_map)["mdi-weather-windy-variant"];
-            conditions = "windy";
-        }
-        it.print(25, 55, id(weather_font), weather_icon_color, img.c_str());
+          conditions = "clear";
+          img = id(material_icons_map)["mdi-weather-night"];
       }
-      catch(...) {};
+      else if (conditions == "cloudy")
+          img = id(material_icons_map)["mdi-weather-cloudy"];
+      else if (conditions == "exceptional")
+          img = id(material_icons_map)["mdi-weather-cloudy-alert"];
+      else if (conditions == "fog")
+          img = id(material_icons_map)["mdi-weather-fog"];
+      else if (conditions == "hail")
+          img = id(material_icons_map)["mdi-weather-hail"];
+      else if (conditions == "lightning-rainy")
+      {
+          conditions = "thunderstorm";
+          img = id(material_icons_map)["mdi-weather-lightning-rainy"];
+      }
+      else if (conditions == "lightning")
+          img = id(material_icons_map)["mdi-weather-lightning"];
+      else if (conditions == "partlycloudy")
+      {
+          bool is_night = id(sun_position).state == "below_horizon";
+          if (is_night)
+              img = id(material_icons_map)["mdi-weather-night-partly-cloudy"];
+          else
+              img = id(material_icons_map)["mdi-weather-partly-cloudy"];
+          conditions = "partly cloudy";
+      }
+      else if (conditions == "pouring")
+      {
+          img = id(material_icons_map)["mdi-weather-pouring"];
+          conditions = "shower";
+      }
+      else if (conditions == "rainy")
+          img = id(material_icons_map)["mdi-weather-rainy"];
+      else if (conditions == "snowy-rainy")
+      {
+          img = id(material_icons_map)["mdi-weather-snowy-rainy"];
+          conditions = "sleet";
+      }
+      else if (conditions == "snowy")
+          img = id(material_icons_map)["mdi-weather-snowy"];
+      else if (conditions == "sunny")
+          img = id(material_icons_map)["mdi-weather-sunny"];
+      else if (conditions == "windy")
+          img = id(material_icons_map)["mdi-weather-windy"];
+      else if (conditions == "windy-variant")
+      {
+          img = id(material_icons_map)["mdi-weather-windy-variant"];
+          conditions = "windy";
+      }
+      it.print(25, 55, id(weather_font), weather_icon_color, img.c_str());
       uint base_y = 25;
       if (!conditions.empty())
       {
@@ -431,20 +423,23 @@ wifi:
   password: !secret wifi_password
   power_save_mode: "HIGH"
 
-web_server:
+switch:
+  - platform: restart
+    id: restart_switch
+    name: ${device_name} Restart
 
 time:
   - platform: homeassistant
     id: ha_time
     on_time_sync: 
       - bm8563.write_time
+  - platform: bm8563
+    id: rtc_time
+    sleep_duration: 60000ms
     on_time:
       - seconds: 0
         then:
           - component.update: m5paper_display
-  - platform: bm8563
-    id: rtc_time
-    sleep_duration: 3600000ms
 
 m5paper:
   battery_power_pin: GPIO5
@@ -571,3 +566,4 @@ binary_sensor:
     name: Radiation alarm
     id: radiation_alarm
     entity_id: ${radiation_alarm}
+

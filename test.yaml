@@ -21,6 +21,8 @@
   alarmo_status: alarm_control_panel.alarmo
   # Radiation alarm
   radiation_alarm: binary_sensor.radiation_alarm
-  
+
+web_server:
+ 
 # Include main functionality file
 <<: !include .screen_base.yaml
