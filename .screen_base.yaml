@@ -411,7 +411,73 @@ display:
         lights_icon_id[12] += lights;
       }
       it.print(870, 280, id(alarms_font), (lights > 0) ? alarm_enabled : alarm_disabled, id(material_icons_map)[lights_icon_id].c_str());
-      
+      // Rain
+      unsigned int g_left = 325;
+      unsigned int g_top = 395;
+      unsigned int g_width = 600;
+      unsigned int g_height = 120;
+      unsigned int max_items = 12;
+      float max_value = 4.0;
+      unsigned int item_width = g_width / max_items;
+      it.rectangle(g_left, g_top, g_width, g_height);
+      for (int i = 1; i < max_items; i++)
+        it.line(g_left + item_width * i, g_top, g_left + item_width * i, g_top + g_height);
+      unsigned int unit_height = (unsigned int) ((float) g_height / max_value);
+      for (int i = 1; i < max_value; i++)
+        it.line(g_left, g_top + g_height - i * unit_height, g_left + g_width, g_top + g_height - i * unit_height);
+      std::string forecast_str = id(precipitation_forecast).state;
+      size_t pos = 0;
+      size_t counter = 0;
+      bool last_item = false;
+      Color graph_color;
+      graph_color.raw_32 = 0x0F;
+      while (!last_item)
+      {
+        size_t found = forecast_str.find(",", pos+1);
+        std::string value_str = "";
+        if (found != std::string::npos)
+        {
+            value_str = forecast_str.substr(pos, found - pos);
+            pos = found + 1;
+        }
+        else
+        {
+            value_str = forecast_str.substr(pos);
+            last_item = true;
+        }
+        if (value_str.length() == 3)
+        {
+            float value = (value_str[0] - 48.0) + (value_str[2] - 48.0) / 10.0;
+            if (value > max_value)
+                value = max_value;
+            if (value > 0)
+            {
+                unsigned int h = ((max_value - value) / max_value) * g_height;
+                it.filled_rectangle(g_left + item_width * counter, g_top + h, item_width, g_height - h, graph_color);
+            }
+            counter++;
+        }
+        else
+        {
+            // Error
+            break;
+        }
+        if (counter >= max_items)
+            break;
+      }
+
+graph:
+  - id: co2_graph
+    sensor: indoor_co2
+    duration: 6h
+    min_value: 400
+    max_value: 2400
+    width: 600
+    height: 120
+    x_grid: 1h
+    y_grid: 500
+    border: true
+
 touchscreen:
   - platform: gt911
     display: m5paper_display
@@ -539,6 +605,11 @@ text_sensor:
     id: alarmo_mode
     entity_id: ${alarmo_status}
     attribute: arm_mode
+  - platform: homeassistant
+    name: Forecast
+    id: precipitation_forecast
+    entity_id: sensor.precipitation_forecast
+    attribute: hourly
 
 binary_sensor:
   - platform: gpio
@@ -566,4 +637,3 @@ binary_sensor:
     name: Radiation alarm
     id: radiation_alarm
     entity_id: ${radiation_alarm}
-
