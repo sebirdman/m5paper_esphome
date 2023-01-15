@@ -445,9 +445,10 @@ display:
             value_str = forecast_str.substr(pos);
             last_item = true;
         }
-        if (value_str.length() == 3)
+        char *pEnd = NULL;
+        float value = strtof(value_str.c_str(), &pEnd);
+        //if (pEnd == NULL)
         {
-            float value = (value_str[0] - 48.0) + (value_str[2] - 48.0) / 10.0;
             if (value > max_value)
                 value = max_value;
             if (value > 0)
@@ -455,13 +456,8 @@ display:
                 unsigned int h = ((max_value - value) / max_value) * g_height;
                 it.filled_rectangle(g_left + item_width * counter, g_top + h, item_width, g_height - h, graph_color);
             }
-            counter++;
         }
-        else
-        {
-            // Error
-            break;
-        }
+        counter++;
         if (counter >= max_items)
             break;
       }
