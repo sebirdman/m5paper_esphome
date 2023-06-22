@@ -81,7 +81,7 @@ void BM8563::read_time() {
     BM8563_TimeStruct.seconds
   );
 
-  time::ESPTime rtc_time{.second = uint8_t(BM8563_TimeStruct.seconds),
+  ESPTime rtc_time{.second = uint8_t(BM8563_TimeStruct.seconds),
                          .minute = uint8_t(BM8563_TimeStruct.minutes),
                          .hour = uint8_t(BM8563_TimeStruct.hours),
                          .day_of_week = uint8_t(BM8563_DateStruct.week),
