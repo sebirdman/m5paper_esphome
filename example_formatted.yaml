@@ -1,0 +1,153 @@
+
+esp32:
+  board:                   esp32dev
+  framework:
+    type:                  arduino
+
+esphome:
+  name:                    tablet
+  on_boot:
+    priority:              750.0
+    then:
+      - IT8951E.clear
+      - delay:             100ms
+      - component.update:  m5paper_display
+
+external_components:
+  - source:
+      type:                git
+      url:                 https://github.com/sebirdman/m5paper_esphome
+      ref:                 main
+    components:            [ bm8563, gt911, it8951e, m5paper, spi ]
+
+# Enable logging
+logger:
+
+# Enable psram
+psram:
+
+# Enable Home Assistant API
+api:
+  password:                ""
+
+ota:
+  safe_mode:               false
+  password:                ""
+
+font:
+  - file:                  'fonts/ComicSansMS3.ttf'
+    id:                    font_small
+    size:                  20
+  - file:                  'fonts/ComicSansMS3.ttf'
+    id:                    font_large
+    size:                  40
+
+spi:
+  clk_pin:                 GPIO14
+  mosi_pin:                GPIO12
+  miso_pin:                GPIO13
+
+i2c:
+  sda:                     GPIO21
+  scl:                     GPIO22
+
+display:
+  - platform:              it8951e
+    id:                    m5paper_display
+    display_cs_pin:        GPIO15
+    reset_pin:             GPIO23
+    busy_pin:              GPIO27
+    rotation:              90
+    reversed:              False
+    update_interval:       "never"
+    lambda: |-
+      it.printf(25, 25, id(font_large), "%.1f°", id(current_temperature).state);
+      it.strftime(350, 25, id(font_small), "%H:%M:%S", id(rtc_time).now());
+
+touchscreen:
+  - platform:              gt911
+    id:                    gt911_touchscreen
+    display:               m5paper_display
+    interrupt_pin:         GPIO36
+
+# Deep sleep works, but it's not great battery life, i'd advise using the 
+# bm
+#deep_sleep:
+#  id:                     deep_sleep_1
+#  run_duration:           30s
+#  sleep_duration:         20min
+#  wakeup_pin:
+#    number:               GPIO38
+#    inverted:             true
+#  esp32_ext1_wakeup:
+#    pins:
+#      - GPIO37
+#    mode:                 ALL_LOW
+
+wifi:
+  ssid:                    "YOUR SSID"
+  password:                "YOUR PASSWORD"
+  power_save_mode:         "HIGH"
+
+time:
+  - platform:              homeassistant
+    id:                    ha_time
+    on_time_sync: 
+      - bm8563.write_time
+  - platform:              bm8563
+    id:                    rtc_time
+    sleep_duration:        3600000ms
+
+m5paper:
+  battery_power_pin:       GPIO5
+  main_power_pin:          GPIO2
+  update_interval:         10s
+  battery_voltage:
+    name:                  "M5Paper Battery"
+
+sensor:
+  - platform:              sht3xd
+    temperature:
+      name:                "M5Paper Temperature"
+    humidity:
+      name:                "M5Paper Humidity"
+    address:               0x44
+    update_interval:       10s
+
+binary_sensor:
+  - platform:              gpio
+    id:                    right_button
+    name:                  "Right"
+    pin: 
+      number:              GPIO37
+      inverted:            true
+    on_press: 
+      - component.update:  m5paper_display
+    on_release: 
+      - component.update:  m5paper_display
+  - platform:              gpio
+    name:                  "BTN/PWR"
+    pin: 
+      number:              GPIO38
+      inverted:            true
+  - platform:              gpio
+    name:                  "Left"
+    pin: 
+      number:              GPIO39
+      inverted:            true
+  - platform:              touchscreen
+    id:                    top_left_touch_button
+    name:                  Top Left Touch Button
+    touchscreen_id:        gt911_touchscreen
+    internal:              true
+    x_min:                 0
+    x_max:                 100
+    y_min:                 0
+    y_max:                 100
+    on_press: 
+      # Example of applying the sleep duration and shutting down to the lowest power mode
+      - bm8563.apply_sleep_duration
+      - delay:             1s
+      - m5paper.shutdown_main_power
+
+
