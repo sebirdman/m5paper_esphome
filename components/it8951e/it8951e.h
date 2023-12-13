@@ -140,7 +140,7 @@ typedef enum               //             Typical
 
 
  private:
-  IT8951DevInfo *device_info_{nullptr};
+  IT8951DevInfo device_info_;
   uint8_t *should_write_buffer_{nullptr};
   void get_device_info(IT8951DevInfo *info);
 
