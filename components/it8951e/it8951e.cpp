@@ -132,7 +132,8 @@ void IT8951ESensor::update_area(uint16_t x, uint16_t y, uint16_t w,
         return;
     }
 
-    this->check_busy();
+    //this->check_busy(); keeps timing out...
+    this->wait_busy();
 
     if (x + w > this->get_width_internal()) {
         w = this->get_width_internal() - x;
