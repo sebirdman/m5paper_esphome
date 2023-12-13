@@ -226,12 +226,13 @@ void IT8951ESensor::setup() {
     this->write_word(2300);
 
 //    get_device_info(this->device_info_);
-    device_info_.usPanelW = 960;
-    device_info_.usPanelH = 540;
+    // get_device_info does not work, so all value hardcoded from https://github.com/m5stack/M5EPD/blob/main/src/M5EPD_Driver.cpp
+    device_info_.usPanelW = M5EPD_PANEL_W;
+    device_info_.usPanelH = M5EPD_PANEL_H;
     device_info_.usImgBufAddrL = 0x36E0;
     device_info_.usImgBufAddrH = 0x0012;
-    device_info_.usFWVersion = "m5paper";
-    device_info_.usLUTVersion = "m5paper";
+    memcpy(device_info_.usFWVersion, "m5paper", 8);
+    memcpy(device_info_.usLUTVersion, "m5paper", 8);
 
     ExternalRAMAllocator<uint8_t> buffer_allocator(ExternalRAMAllocator<uint8_t>::NONE);
     this->should_write_buffer_ = buffer_allocator.allocate(this->get_buffer_length_());
