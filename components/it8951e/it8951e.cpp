@@ -13,6 +13,7 @@ namespace it8951e {
 static const char *TAG = "it8951e.display";
 
 void IT8951ESensor::write_two_byte16(uint16_t type, uint16_t cmd) {
+    this->wait_busy();
     this->enable_cs();
 
     this->write_byte16(type);
