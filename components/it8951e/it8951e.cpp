@@ -155,9 +155,11 @@ void IT8951ESensor::update_area(uint16_t x, uint16_t y, uint16_t w,
 }
 
 void IT8951ESensor::reset(void) {
-    this->reset_pin_->digital_write(false);
-    delay(100);
     this->reset_pin_->digital_write(true);
+    this->reset_pin_->digital_write(false);
+    delay(20);
+    this->reset_pin_->digital_write(true);
+    delay(100);
 }
 
 void IT8951ESensor::read_words(void *buf, uint32_t length) {
