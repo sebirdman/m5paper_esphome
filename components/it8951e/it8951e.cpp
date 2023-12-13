@@ -294,10 +294,6 @@ void IT8951ESensor::write_buffer_to_display(uint16_t x, uint16_t y, uint16_t w,
 }
 
 void IT8951ESensor::write_display() {
- if (this->device_info_.usImgBufAddrL != 0x36E0) {
-  return;
- }
-
  //this->write_command(IT8951_TCON_SYS_RUN);
  this->write_buffer_to_display(0, 0, this->max_x, this->max_y, this->buffer_);
  this->update_area(0, 0, this->max_x, this->max_y, UPDATE_MODE_GC16);
@@ -373,24 +369,14 @@ void HOT IT8951ESensor::draw_absolute_pixel_internal(int x, int y, Color color) 
 }
 
 int IT8951ESensor::get_width_internal() {
-    if (this->device_info_.usImgBufAddrL != 0x36E0) {
-        return M5EPD_PANEL_W; // workaround for touchscreen calling this reallly early
-    }
     return this->device_info_.usPanelW;
 }
 
 int IT8951ESensor::get_height_internal() {
-    if (this->device_info_.usImgBufAddrL != 0x36E0) {
-        return M5EPD_PANEL_H; // workaround for touchscreen calling this reallly early
-    }
     return this->device_info_.usPanelH;
 }
 
 void IT8951ESensor::dump_config(){
-    if (this->device_info_.usImgBufAddrL != 0x36E0) {
-        ESP_LOGCONFIG(TAG, "Not Configured");
-        return;
-    }
     ESP_LOGCONFIG(TAG, "Height:%d Width:%d LUT: %s, FW: %s, Mem:%x", 
         this->device_info_.usPanelH, 
         this->device_info_.usPanelW,
