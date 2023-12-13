@@ -172,7 +172,7 @@ void IT8951ESensor::read_words(void *buf, uint32_t length) {
     this->transfer_byte(0);
     this->wait_busy();
 
-    ExternalRAMAllocator<uint16_t> allocator(ExternalRAMAllocator<uint16_t>::ALLOW_FAILURE);
+    ExternalRAMAllocator<uint16_t> allocator(ExternalRAMAllocator<uint16_t>::NONE);
     uint16_t *buffer = allocator.allocate(length);
     if (buffer == nullptr) {
         ESP_LOGE(TAG, "Read FAILED.");
@@ -215,7 +215,7 @@ void IT8951ESensor::setup() {
     this->disable_cs();
     this->enable();
 
-    ExternalRAMAllocator<IT8951DevInfo> allocator(ExternalRAMAllocator<IT8951DevInfo>::ALLOW_FAILURE);
+    ExternalRAMAllocator<IT8951DevInfo> allocator(ExternalRAMAllocator<IT8951DevInfo>::NONE);
     this->device_info_ = allocator.allocate(1);
     if (this->device_info_ == nullptr) {
         ESP_LOGE(TAG, "Init FAILED.");
@@ -234,7 +234,7 @@ void IT8951ESensor::setup() {
 
     get_device_info(this->device_info_);
 
-    ExternalRAMAllocator<uint8_t> buffer_allocator(ExternalRAMAllocator<uint8_t>::ALLOW_FAILURE);
+    ExternalRAMAllocator<uint8_t> buffer_allocator(ExternalRAMAllocator<uint8_t>::NONE);
     this->should_write_buffer_ = buffer_allocator.allocate(this->get_buffer_length_());
     if (this->should_write_buffer_ == nullptr) {
         ESP_LOGE(TAG, "Init FAILED.");
