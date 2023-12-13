@@ -146,8 +146,8 @@ void IT8951ESensor::update_area(uint16_t x, uint16_t y, uint16_t w,
     args[2] = w;
     args[3] = h;
     args[4] = mode;
-    args[5] = this->device_info_->usImgBufAddrL;
-    args[6] = this->device_info_->usImgBufAddrH;
+    args[5] = this->device_info_.usImgBufAddrL;
+    args[6] = this->device_info_.usImgBufAddrH;
 
     this->enable();
     this->write_args(IT8951_I80_CMD_DPY_BUF_AREA, args, 7);
@@ -215,13 +215,6 @@ void IT8951ESensor::setup() {
     this->disable_cs();
     this->enable();
 
-    ExternalRAMAllocator<IT8951DevInfo> allocator(ExternalRAMAllocator<IT8951DevInfo>::NONE);
-    this->device_info_ = allocator.allocate(1);
-    if (this->device_info_ == nullptr) {
-        ESP_LOGE(TAG, "Init FAILED.");
-        return;
-    }
-
     this->write_command(IT8951_TCON_SYS_RUN);
 
     // enable pack write
@@ -232,7 +225,13 @@ void IT8951ESensor::setup() {
     this->write_word(0x0001);
     this->write_word(2300);
 
-    get_device_info(this->device_info_);
+//    get_device_info(this->device_info_);
+    device_info_.usPanelW = 960;
+    device_info_.usPanelH = 540;
+    device_info_.usImgBufAddrL = 0x36E0;
+    device_info_.usImgBufAddrH = 0x0012;
+    device_info_.usFWVersion = "m5paper";
+    device_info_.usLUTVersion = "m5paper";
 
     ExternalRAMAllocator<uint8_t> buffer_allocator(ExternalRAMAllocator<uint8_t>::NONE);
     this->should_write_buffer_ = buffer_allocator.allocate(this->get_buffer_length_());
@@ -264,7 +263,7 @@ void IT8951ESensor::write_buffer_to_display(uint16_t x, uint16_t y, uint16_t w,
     }
 
     this->enable();
-    this->set_target_memory_addr(this->device_info_->usImgBufAddrL | (this->device_info_->usImgBufAddrH << 16));
+    this->set_target_memory_addr(this->device_info_.usImgBufAddrL | (this->device_info_.usImgBufAddrH << 16));
     this->set_area(x, y, w, h);
 
     uint32_t pos = 0;
@@ -287,7 +286,7 @@ void IT8951ESensor::write_buffer_to_display(uint16_t x, uint16_t y, uint16_t w,
 }
 
 void IT8951ESensor::write_display() {
- if (this->device_info_ == nullptr) {
+ if (this->device_info_.usImgBufAddrL != 0x36E0) {
   return;
  }
 
@@ -309,7 +308,7 @@ void IT8951ESensor::write_display() {
 void IT8951ESensor::clear(bool init) {
     this->enable();
 
-    this->set_target_memory_addr(this->device_info_->usImgBufAddrL | (this->device_info_->usImgBufAddrH << 16));
+    this->set_target_memory_addr(this->device_info_.usImgBufAddrL | (this->device_info_.usImgBufAddrH << 16));
     this->set_area(0, 0, this->get_width_internal(), this->get_height_internal());    
     uint32_t looping = (this->get_width_internal() * this->get_height_internal()) >> 2;
 
@@ -366,30 +365,30 @@ void HOT IT8951ESensor::draw_absolute_pixel_internal(int x, int y, Color color) 
 }
 
 int IT8951ESensor::get_width_internal() {
-    if (this->device_info_ == nullptr) {
+    if (this->device_info_.usImgBufAddrL != 0x36E0) {
         return M5EPD_PANEL_W; // workaround for touchscreen calling this reallly early
     }
-    return this->device_info_->usPanelW;
+    return this->device_info_.usPanelW;
 }
 
 int IT8951ESensor::get_height_internal() {
-    if (this->device_info_ == nullptr) {
+    if (this->device_info_.usImgBufAddrL != 0x36E0) {
         return M5EPD_PANEL_H; // workaround for touchscreen calling this reallly early
     }
-    return this->device_info_->usPanelH;
+    return this->device_info_.usPanelH;
 }
 
 void IT8951ESensor::dump_config(){
-    if (this->device_info_ == nullptr) {
+    if (this->device_info_.usImgBufAddrL != 0x36E0) {
         ESP_LOGCONFIG(TAG, "Not Configured");
         return;
     }
     ESP_LOGCONFIG(TAG, "Height:%d Width:%d LUT: %s, FW: %s, Mem:%x", 
-        this->device_info_->usPanelH, 
-        this->device_info_->usPanelW,
-        this->device_info_->usLUTVersion,
-        this->device_info_->usFWVersion,
-        this->device_info_->usImgBufAddrL | (this->device_info_->usImgBufAddrH << 16)
+        this->device_info_.usPanelH, 
+        this->device_info_.usPanelW,
+        this->device_info_.usLUTVersion,
+        this->device_info_.usFWVersion,
+        this->device_info_.usImgBufAddrL | (this->device_info_.usImgBufAddrH << 16)
     );
 }
 
