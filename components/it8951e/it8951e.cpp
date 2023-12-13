@@ -249,6 +249,9 @@ void IT8951ESensor::setup() {
 
     this->init_internal_(this->get_buffer_length_());
 
+    // Clear screen at startup
+    this->clear(true);
+
     ESP_LOGE(TAG, "Init SUCCESS.");
 }
 
