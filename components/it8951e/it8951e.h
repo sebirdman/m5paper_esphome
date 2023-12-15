@@ -116,6 +116,7 @@ typedef enum               //             Typical
 
   void set_reset_pin(GPIOPin *reset) { this->reset_pin_ = reset; }
   void set_busy_pin(GPIOPin *busy) { this->busy_pin_ = busy; }
+  void set_ext_pin(GPIOPin *ext) { this->ext_pin_ = ext; }
   void set_cs_pin(GPIOPin *cs) { 
     cs->pin_mode(gpio::FLAG_OUTPUT);
     this->cs_pin_ = cs; 
@@ -158,6 +159,7 @@ typedef enum               //             Typical
   GPIOPin *reset_pin_{nullptr};
   GPIOPin *busy_pin_{nullptr};
   GPIOPin *cs_pin_{nullptr};
+  GPIOPin *ext_pin_{nullptr};
 
   bool reversed_ = false;
 
