@@ -314,10 +314,13 @@ void IT8951ESensor::setup() {
         ESP_LOGE(TAG, "Init FAILED.");
         return;
     }
+    ESP_LOGE(TAG, "Buffer allocated.");
 
     this->disable();
+    ESP_LOGE(TAG, "SPI disable.");
 
     this->init_internal_(this->get_buffer_length_());
+    ESP_LOGE(TAG, "Buffer init.");
 
     delay(1000);
 
