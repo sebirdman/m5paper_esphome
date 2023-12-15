@@ -168,8 +168,8 @@ typedef enum               //             Typical
 
   void reset(void);
 
-  void wait_busy(uint32_t timeout = 1000);
-  void check_busy(uint32_t timeout = 1000);
+  void wait_busy(uint32_t timeout = 100);
+  void check_busy(uint32_t timeout = 100);
 
   // comes from ref driver code from waveshare
   uint16_t read_word();
