@@ -1,6 +1,5 @@
 #pragma once
 
-#include "esphome/core/log.h"
 #include "esphome/core/component.h"
 #include "esphome/core/hal.h"
 #include <vector>
@@ -222,7 +221,6 @@ class SPIComponent : public Component {
         data_mode = SPI_MODE3;
       }
       SPISettings settings(DATA_RATE, BIT_ORDER, data_mode);
-      ESP_LOGE("spi", "Using SPI_MODE0: %s", (data_mode == SPI_MODE0 ? "yes" : "no"));
       this->hw_spi_->beginTransaction(settings);
     } else {
 #endif  // USE_SPI_ARDUINO_BACKEND
