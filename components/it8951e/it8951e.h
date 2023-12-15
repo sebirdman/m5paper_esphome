@@ -177,7 +177,7 @@ typedef enum               //             Typical
   void set_target_memory_addr(uint32_t tar_addr);
   void write_args(uint16_t cmd, uint16_t *args, uint16_t length);
 
-  void set_rotation(uint16_t rotate = IT8951_ROTATE_0);
+  void set_rotation(uint16_t rotate);
   void set_area(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
   void update_area(uint16_t x, uint16_t y, uint16_t w,
                     uint16_t h, m5epd_update_mode_t mode);
