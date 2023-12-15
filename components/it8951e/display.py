@@ -32,7 +32,7 @@ CONFIG_SCHEMA = cv.All(
             cv.Required(CONF_RESET_PIN): pins.gpio_output_pin_schema,
             cv.Required(CONF_ENABLE_PIN): pins.gpio_output_pin_schema,
             cv.Required(CONF_BUSY_PIN): pins.gpio_input_pin_schema,
-            cv.Required(CONF_DISPLAY_CS_PIN): pins.gpio_input_pin_schema,
+            cv.Required(CONF_DISPLAY_CS_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_REVERSED): cv.boolean,
         }
     )
