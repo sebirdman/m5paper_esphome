@@ -324,9 +324,6 @@ void IT8951ESensor::setup() {
 
     delay(1000);
 
-    // Clear screen at startup
-    this->clear(true);
-
     ESP_LOGE(TAG, "Init SUCCESS.");
 }
 
