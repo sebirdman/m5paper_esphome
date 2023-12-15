@@ -249,26 +249,31 @@ uint32_t IT8951ESensor::get_buffer_length_() { return this->get_width_internal()
 void IT8951ESensor::get_device_info(IT8951DevInfo *info) {
     this->write_command(IT8951_I80_CMD_GET_DEV_INFO);
     this->read_words(info, sizeof(IT8951DevInfo)/2);//Polling HRDY for each words(2-bytes) if possible
-    ESP_LOGE(TAG, "Height:%d Width:%d LUT: %s, FW: %s, Mem:%x", 
-        info->usPanelH, 
-        info->usPanelW,
-        info->usLUTVersion,
-        info->usFWVersion,
-        info->usImgBufAddrL | (info->usImgBufAddrH << 16)
-    );
+}
+
+uint16_t IT8951ESensor::get_vcom() {
+    this->write_command(IT8951_I80_CMD_VCOM); // tcon vcom get command
+    this->write_word(0x0000);
+    uint16_t vcom = this->read_word();
+    ESP_LOGI(TAG, "VCOM = %.02fV", (float)vcom/1000);
+    return vcom;
+}
+
+void IT8951ESensor::set_vcom(uint16_t vcom) {
+        this->write_command(IT8951_I80_CMD_VCOM); // tcon vcom set command
+        this->write_word(0x0001);
+        this->write_word(vcom);
 }
 
 void IT8951ESensor::setup() {
     ESP_LOGE(TAG, "Init Starting.");
-
-    if (nullptr != this->ext_pin_ && nullptr != this->reset_pin_) {
-        this->ext_pin_->pin_mode(gpio::FLAG_OUTPUT);
-        this->ext_pin_->digital_write(true);
+    this->spi_setup();
+    
+    if (nullptr != this->reset_pin_) {
         this->reset_pin_->pin_mode(gpio::FLAG_OUTPUT);
         this->reset();
         delay(1000);
     }
-    this->spi_setup();
     
     this->cs_pin_->pin_mode(gpio::FLAG_OUTPUT);
     this->disable_cs();
@@ -281,8 +286,8 @@ void IT8951ESensor::setup() {
     this->set_rotation(IT8951_ROTATE_0);
     this->device_info_.usImgBufAddrL = 0x36E0;
     this->device_info_.usImgBufAddrH = 0x0012;
-    memcpy(this->device_info_.usFWVersion, "m5paper", 8);
-    memcpy(this->device_info_.usLUTVersion, "m5paper", 8);
+    memcpy(this->device_info_.usFWVersion, "m5paper_v1.1", 13);
+    memcpy(this->device_info_.usLUTVersion, "m5paper_v1.1", 13);
     this->dump_config();
     
     this->write_command(IT8951_TCON_SYS_RUN);
@@ -291,21 +296,10 @@ void IT8951ESensor::setup() {
     this->write_reg(IT8951_I80CPCR, 0x0001);
 
     // set vcom to -2.30v
-    // IT8951GetVCOM
-    this->write_command(IT8951_I80_CMD_VCOM); // tcon vcom get command
-    this->write_word(0x0000);
-    uint16_t vcom = this->read_word();
-    ESP_LOGE(TAG, "VCOM = %.02fV", (float)vcom/1000);
+    uint16_t vcom = this->get_vcom();
     if (2300 != vcom) {
-        // IT8951SetVCOM
-        this->write_command(IT8951_I80_CMD_VCOM); // tcon vcom set command
-        this->write_word(0x0001);
-        this->write_word(2300);
-        // IT8951GetVCOM
-        this->write_command(IT8951_I80_CMD_VCOM); // tcon vcom get command
-        this->write_word(0x0000);
-        uint16_t vcom2 = this->read_word();
-        ESP_LOGE(TAG, "VCOM = %.02fV", (float)vcom2/1000);
+        this->set_vcom(2300);
+        this->get_vcom();
     }
 
     ExternalRAMAllocator<uint8_t> buffer_allocator(ExternalRAMAllocator<uint8_t>::ALLOW_FAILURE);
@@ -314,17 +308,11 @@ void IT8951ESensor::setup() {
         ESP_LOGE(TAG, "Init FAILED.");
         return;
     }
-    ESP_LOGE(TAG, "Buffer allocated.");
-
+    
     this->disable();
-    ESP_LOGE(TAG, "SPI disable.");
-
     this->init_internal_(this->get_buffer_length_());
-    ESP_LOGE(TAG, "Buffer init.");
 
     delay(1000);
-
-    ESP_LOGE(TAG, "Init SUCCESS.");
 }
 
 /** @brief Write the image at the specified location, Partial update
@@ -455,7 +443,7 @@ int IT8951ESensor::get_height_internal() {
 }
 
 void IT8951ESensor::dump_config(){
-    ESP_LOGCONFIG(TAG, "Height:%d Width:%d LUT: %s, FW: %s, Mem:%x", 
+    ESP_LOGE(TAG, "Height:%d Width:%d LUT: %s, FW: %s, Mem:%x", 
         this->device_info_.usPanelH, 
         this->device_info_.usPanelW,
         this->device_info_.usLUTVersion,
