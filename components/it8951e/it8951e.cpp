@@ -200,9 +200,9 @@ void IT8951ESensor::update_area(uint16_t x, uint16_t y, uint16_t w,
     args[5] = this->device_info_.usImgBufAddrL;
     args[6] = this->device_info_.usImgBufAddrH;
 
-    this->enable();
+//    this->enable();
     this->write_args(IT8951_I80_CMD_DPY_BUF_AREA, args, 7);
-    this->disable();
+//    this->disable();
 }
 
 void IT8951ESensor::reset(void) {
@@ -248,7 +248,7 @@ uint32_t IT8951ESensor::get_buffer_length_() { return this->get_width_internal()
 
 void IT8951ESensor::get_device_info(IT8951DevInfo *info) {
     this->write_command(IT8951_I80_CMD_GET_DEV_INFO);
-    this->read_words(info, sizeof(IT8951DevInfo));
+    this->read_words(info, sizeof(IT8951DevInfo)/2);//Polling HRDY for each words(2-bytes) if possible
     ESP_LOGE(TAG, "Height:%d Width:%d LUT: %s, FW: %s, Mem:%x", 
         info->usPanelH, 
         info->usPanelW,
@@ -274,13 +274,15 @@ void IT8951ESensor::setup() {
     this->busy_pin_->pin_mode(gpio::FLAG_INPUT);
     this->enable();
 
-//    get_device_info(this->device_info_);
+    this->get_device_info(this->device_info_);
+    this->dump_config();
     // get_device_info does not work, so all value hardcoded from https://github.com/m5stack/M5EPD/blob/main/src/M5EPD_Driver.cpp
     this->set_rotation(IT8951_ROTATE_0);
     this->device_info_.usImgBufAddrL = 0x36E0;
     this->device_info_.usImgBufAddrH = 0x0012;
     memcpy(this->device_info_.usFWVersion, "m5paper", 8);
     memcpy(this->device_info_.usLUTVersion, "m5paper", 8);
+    this->dump_config();
     
     this->write_command(IT8951_TCON_SYS_RUN);
 
@@ -288,9 +290,22 @@ void IT8951ESensor::setup() {
     this->write_reg(IT8951_I80CPCR, 0x0001);
 
     // set vcom to -2.30v
-    this->write_command(IT8951_I80_CMD_VCOM); // tcon vcom set command
-    this->write_word(0x0001);
-    this->write_word(2300);
+    // IT8951GetVCOM
+    this->write_command(IT8951_I80_CMD_VCOM); // tcon vcom get command
+    this->write_word(0x0000);
+    uint16_t vcom = this->read_word();
+    ESP_LOGE(TAG, "VCOM = -%.02fV", (float)vcom/1000);
+    if (2300 != vcom) {
+        // IT8951SetVCOM
+        this->write_command(IT8951_I80_CMD_VCOM); // tcon vcom set command
+        this->write_word(0x0001);
+        this->write_word(2300);
+        // IT8951GetVCOM
+        this->write_command(IT8951_I80_CMD_VCOM); // tcon vcom get command
+        this->write_word(0x0000);
+        uint16_t vcom2 = this->read_word();
+        ESP_LOGE(TAG, "VCOM = -%.02fV", (float)vcom2/1000);
+    }
 
     ExternalRAMAllocator<uint8_t> buffer_allocator(ExternalRAMAllocator<uint8_t>::ALLOW_FAILURE);
     this->should_write_buffer_ = buffer_allocator.allocate(this->get_buffer_length_());
@@ -299,7 +314,7 @@ void IT8951ESensor::setup() {
         return;
     }
 
-    this->disable();
+//    this->disable();
 
     this->init_internal_(this->get_buffer_length_());
 
@@ -328,7 +343,7 @@ void IT8951ESensor::write_buffer_to_display(uint16_t x, uint16_t y, uint16_t w,
         return;
     }
 
-    this->enable();
+//    this->enable();
     this->set_target_memory_addr(this->device_info_.usImgBufAddrL | (this->device_info_.usImgBufAddrH << 16));
     this->set_area(x, y, w, h);
 
@@ -348,7 +363,7 @@ void IT8951ESensor::write_buffer_to_display(uint16_t x, uint16_t y, uint16_t w,
     }
 
     this->write_command(IT8951_TCON_LD_IMG_END);
-    this->disable();
+//    this->disable();
 }
 
 void IT8951ESensor::write_display() {
@@ -370,7 +385,7 @@ void IT8951ESensor::write_display() {
 void IT8951ESensor::clear(bool init) {
     this->m_endian_type = IT8951_LDIMG_L_ENDIAN;
     this->m_pix_bpp     = IT8951_4BPP;
-    this->enable();
+//    this->enable();
 
     this->set_target_memory_addr(this->device_info_.usImgBufAddrL | (this->device_info_.usImgBufAddrH << 16));
     this->set_area(0, 0, this->get_width_internal(), this->get_height_internal());    
@@ -384,7 +399,7 @@ void IT8951ESensor::clear(bool init) {
 
     this->write_command(IT8951_TCON_LD_IMG_END);
 
-    this->disable();
+//    this->disable();
 
     if (init) {
         this->update_area(0, 0, this->get_width_internal(), this->get_height_internal(), UPDATE_MODE_INIT);
