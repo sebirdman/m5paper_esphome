@@ -261,13 +261,24 @@ void IT8951ESensor::get_device_info(IT8951DevInfo *info) {
 void IT8951ESensor::setup() {
     ESP_LOGE(TAG, "Init Starting.");
 
-    this->busy_pin_->pin_mode(gpio::FLAG_INPUT);
-    this->reset_pin_->pin_mode(gpio::FLAG_OUTPUT);
-
-    this->reset();
+    if (nullptr != this->reset_pin_) {
+        this->reset_pin_->pin_mode(gpio::FLAG_OUTPUT);
+        this->reset();
+    }
+    
     this->disable_cs();
+    this->cs_pin_->pin_mode(gpio::FLAG_OUTPUT);
+    this->busy_pin_->pin_mode(gpio::FLAG_INPUT);
     this->enable();
 
+//    get_device_info(this->device_info_);
+    // get_device_info does not work, so all value hardcoded from https://github.com/m5stack/M5EPD/blob/main/src/M5EPD_Driver.cpp
+    this->set_rotation(IT8951_ROTATE_0);
+    this->device_info_.usImgBufAddrL = 0x36E0;
+    this->device_info_.usImgBufAddrH = 0x0012;
+    memcpy(this->device_info_.usFWVersion, "m5paper", 8);
+    memcpy(this->device_info_.usLUTVersion, "m5paper", 8);
+    
     this->write_command(IT8951_TCON_SYS_RUN);
 
     // enable pack write
@@ -277,14 +288,6 @@ void IT8951ESensor::setup() {
     this->write_command(IT8951_I80_CMD_VCOM); // tcon vcom set command
     this->write_word(0x0001);
     this->write_word(2300);
-
-//    get_device_info(this->device_info_);
-    // get_device_info does not work, so all value hardcoded from https://github.com/m5stack/M5EPD/blob/main/src/M5EPD_Driver.cpp
-    this->set_rotation(IT8951_ROTATE_0);
-    this->device_info_.usImgBufAddrL = 0x36E0;
-    this->device_info_.usImgBufAddrH = 0x0012;
-    memcpy(this->device_info_.usFWVersion, "m5paper", 8);
-    memcpy(this->device_info_.usLUTVersion, "m5paper", 8);
 
     ExternalRAMAllocator<uint8_t> buffer_allocator(ExternalRAMAllocator<uint8_t>::ALLOW_FAILURE);
     this->should_write_buffer_ = buffer_allocator.allocate(this->get_buffer_length_());
@@ -296,6 +299,8 @@ void IT8951ESensor::setup() {
     this->disable();
 
     this->init_internal_(this->get_buffer_length_());
+
+    delay(1000);
 
     // Clear screen at startup
     this->clear(true);
