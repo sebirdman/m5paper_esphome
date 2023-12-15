@@ -160,8 +160,8 @@ void IT8951ESensor::update_area(uint16_t x, uint16_t y, uint16_t w,
     x = (x + 3) & 0xFFFC;
     y = (y + 3) & 0xFFFC;
 
-    //this->check_busy(); keeps timing out...
-    this->wait_busy();
+    this->check_busy(); // keeps timing out...
+    //this->wait_busy();
 
     if (x + w > this->get_width_internal()) {
         w = this->get_width_internal() - x;
@@ -261,9 +261,12 @@ void IT8951ESensor::get_device_info(IT8951DevInfo *info) {
 void IT8951ESensor::setup() {
     ESP_LOGE(TAG, "Init Starting.");
 
-    if (nullptr != this->reset_pin_) {
+    if (nullptr != this->ext_pin_ && nullptr != this->reset_pin_) {
+        this->ext_pin_->pin_mode(gpio::FLAG_OUTPUT);
+        this->ext_pin_->digital_write(true);
         this->reset_pin_->pin_mode(gpio::FLAG_OUTPUT);
         this->reset();
+        delay(1000);
     }
     
     this->disable_cs();
