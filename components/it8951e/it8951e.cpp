@@ -357,7 +357,8 @@ void IT8951ESensor::write_buffer_to_display(uint16_t x, uint16_t y, uint16_t w,
         }
 
         this->enable_cs();
-        this->write_byte32(word);
+        this->write_byte16(0);
+        this->write_byte16(word);
         this->disable_cs();
         pos += 2;
     }
@@ -393,7 +394,8 @@ void IT8951ESensor::clear(bool init) {
 
     for (uint32_t x = 0; x < looping; x++) {
         this->enable_cs();
-        this->write_byte32(0x0000FFFF);
+        this->write_byte16(0x0000);
+        this->write_byte16(0xFFFF);
         this->disable_cs();
     }
 
