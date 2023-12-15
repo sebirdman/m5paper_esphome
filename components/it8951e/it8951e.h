@@ -116,7 +116,6 @@ typedef enum               //             Typical
 
   void set_reset_pin(GPIOPin *reset) { this->reset_pin_ = reset; }
   void set_busy_pin(GPIOPin *busy) { this->busy_pin_ = busy; }
-  void set_ext_pin(GPIOPin *ext) { this->ext_pin_ = ext; }
   void set_cs_pin(GPIOPin *cs) { 
     cs->pin_mode(gpio::FLAG_OUTPUT);
     this->cs_pin_ = cs; 
@@ -159,7 +158,6 @@ typedef enum               //             Typical
   GPIOPin *reset_pin_{nullptr};
   GPIOPin *busy_pin_{nullptr};
   GPIOPin *cs_pin_{nullptr};
-  GPIOPin *ext_pin_{nullptr};
 
   bool reversed_ = false;
 
@@ -170,6 +168,9 @@ typedef enum               //             Typical
 
   void wait_busy(uint32_t timeout = 100);
   void check_busy(uint32_t timeout = 100);
+
+  uint16_t get_vcom();
+  void set_vcom(uint16_t vcom);
 
   // comes from ref driver code from waveshare
   uint16_t read_word();
