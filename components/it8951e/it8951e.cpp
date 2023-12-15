@@ -268,6 +268,7 @@ void IT8951ESensor::setup() {
         this->reset();
         delay(1000);
     }
+    this->spi_setup();
     
     this->cs_pin_->pin_mode(gpio::FLAG_OUTPUT);
     this->disable_cs();
