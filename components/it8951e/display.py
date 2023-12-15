@@ -7,6 +7,7 @@ from esphome.const import (
     CONF_NAME,
     CONF_ID,
     CONF_RESET_PIN,
+    CONF_ENABLE_PIN,
     CONF_BUSY_PIN,
     CONF_PAGES,
     CONF_LAMBDA,
@@ -29,6 +30,7 @@ CONFIG_SCHEMA = cv.All(
             cv.GenerateID(): cv.declare_id(IT8951ESensor),
             cv.Optional(CONF_NAME): cv.string,
             cv.Required(CONF_RESET_PIN): pins.gpio_output_pin_schema,
+            cv.Required(CONF_ENABLE_PIN): pins.gpio_output_pin_schema,
             cv.Required(CONF_BUSY_PIN): pins.gpio_input_pin_schema,
             cv.Required(CONF_DISPLAY_CS_PIN): pins.gpio_input_pin_schema,
             cv.Optional(CONF_REVERSED): cv.boolean,
@@ -70,6 +72,9 @@ async def to_code(config):
     if CONF_RESET_PIN in config:
         reset = await cg.gpio_pin_expression(config[CONF_RESET_PIN])
         cg.add(var.set_reset_pin(reset))
+    if CONF_ENABLE_PIN in config:
+        enable = await cg.gpio_pin_expression(config[CONF_ENABLE_PIN])
+        cg.add(var.set_ext_pin(enable))
     if CONF_BUSY_PIN in config:
         busy = await cg.gpio_pin_expression(config[CONF_BUSY_PIN])
         cg.add(var.set_busy_pin(busy))
