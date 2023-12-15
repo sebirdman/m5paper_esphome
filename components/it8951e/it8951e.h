@@ -152,7 +152,7 @@ typedef enum               //             Typical
   uint32_t max_y = 0;
   uint8_t m_rotate = 0;
   uint8_t m_direction = 1;
-  uint16_t _endian_type, _pix_bpp;
+  uint16_t m_endian_type, m_pix_bpp;
 
 
   GPIOPin *reset_pin_{nullptr};
