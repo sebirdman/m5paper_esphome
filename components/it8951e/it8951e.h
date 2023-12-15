@@ -120,6 +120,7 @@ typedef enum               //             Typical
     cs->pin_mode(gpio::FLAG_OUTPUT);
     this->cs_pin_ = cs; 
   }
+  void set_rotation(uint16_t rotate);
   void set_reversed(bool reversed) { this->reversed_ = reversed; }
 
   uint8_t get_rotate(void) { return m_rotate; };
@@ -177,7 +178,6 @@ typedef enum               //             Typical
   void set_target_memory_addr(uint32_t tar_addr);
   void write_args(uint16_t cmd, uint16_t *args, uint16_t length);
 
-  void set_rotation(uint16_t rotate);
   void set_area(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
   void update_area(uint16_t x, uint16_t y, uint16_t w,
                     uint16_t h, m5epd_update_mode_t mode);
