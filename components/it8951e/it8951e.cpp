@@ -109,7 +109,7 @@ void IT8951ESensor::set_rotation(uint16_t rotate) {
 void IT8951ESensor::set_area(uint16_t x, uint16_t y, uint16_t w,
                                   uint16_t h) {
     uint16_t args[5];
-    args[0] = (IT8951_LDIMG_B_ENDIAN << 8 | IT8951_4BPP << 4 | this->m_rotate);
+    args[0] = (this->m_endian_type << 8 | this->m_pix_bpp << 4 | this->m_rotate);
     args[1] = x;
     args[2] = y;
     args[3] = w;
@@ -318,6 +318,8 @@ void IT8951ESensor::setup() {
  */
 void IT8951ESensor::write_buffer_to_display(uint16_t x, uint16_t y, uint16_t w,
                                             uint16_t h, const uint8_t *gram) {
+    this->m_endian_type = IT8951_LDIMG_B_ENDIAN;
+    this->m_pix_bpp     = IT8951_4BPP;
     if (x > this->get_width_internal() || y > this->get_height_internal()) {
         ESP_LOGE(TAG, "Pos (%d, %d) out of bounds.", x, y);
         return;
@@ -363,6 +365,8 @@ void IT8951ESensor::write_display() {
  * @retval m5epd_err_t
  */
 void IT8951ESensor::clear(bool init) {
+    this->m_endian_type = IT8951_LDIMG_L_ENDIAN;
+    this->m_pix_bpp     = IT8951_4BPP;
     this->enable();
 
     this->set_target_memory_addr(this->device_info_.usImgBufAddrL | (this->device_info_.usImgBufAddrH << 16));
