@@ -122,6 +122,9 @@ typedef enum               //             Typical
   }
   void set_reversed(bool reversed) { this->reversed_ = reversed; }
 
+  uint8_t get_rotate(void) { return m_rotate; };
+  uint8_t get_direction(void) { return m_direction; };
+
   void setup() override;
   void update() override;
   void dump_config() override;
@@ -146,6 +149,7 @@ typedef enum               //             Typical
 
   uint32_t max_x = 0;
   uint32_t max_y = 0;
+  uint8_t m_direction, m_rotate;
 
   GPIOPin *reset_pin_{nullptr};
   GPIOPin *busy_pin_{nullptr};
@@ -172,6 +176,7 @@ typedef enum               //             Typical
   void set_target_memory_addr(uint32_t tar_addr);
   void write_args(uint16_t cmd, uint16_t *args, uint16_t length);
 
+  void set_rotation(uint16_t rotate = IT8951_ROTATE_0);
   void set_area(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
   void update_area(uint16_t x, uint16_t y, uint16_t w,
                     uint16_t h, m5epd_update_mode_t mode);
