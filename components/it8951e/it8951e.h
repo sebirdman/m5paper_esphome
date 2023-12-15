@@ -10,7 +10,7 @@ namespace it8951e {
 class IT8951ESensor : public PollingComponent,
                       public display::DisplayBuffer,
                       public spi::SPIDevice<spi::BIT_ORDER_MSB_FIRST, spi::CLOCK_POLARITY_LOW, spi::CLOCK_PHASE_LEADING,
-                                            spi::DATA_RATE_5MHZ> {
+                                            spi::DATA_RATE_1MHZ> {
  public:
   float get_loop_priority() const override;
   float get_setup_priority() const override;
@@ -168,8 +168,8 @@ typedef enum               //             Typical
 
   void reset(void);
 
-  void wait_busy(uint32_t timeout = 3000);
-  void check_busy(uint32_t timeout = 3000);
+  void wait_busy(uint32_t timeout = 1000);
+  void check_busy(uint32_t timeout = 1000);
 
   // comes from ref driver code from waveshare
   uint16_t read_word();
