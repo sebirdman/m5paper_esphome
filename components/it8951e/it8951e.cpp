@@ -280,7 +280,7 @@ void IT8951ESensor::setup() {
 
 //    get_device_info(this->device_info_);
     // get_device_info does not work, so all value hardcoded from https://github.com/m5stack/M5EPD/blob/main/src/M5EPD_Driver.cpp
-    set_rotation(IT8951_ROTATE_0);
+    this->set_rotation(IT8951_ROTATE_0);
     this->device_info_.usImgBufAddrL = 0x36E0;
     this->device_info_.usImgBufAddrH = 0x0012;
     memcpy(this->device_info_.usFWVersion, "m5paper", 8);
