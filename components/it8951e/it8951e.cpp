@@ -269,8 +269,8 @@ void IT8951ESensor::setup() {
         delay(1000);
     }
     
-    this->disable_cs();
     this->cs_pin_->pin_mode(gpio::FLAG_OUTPUT);
+    this->disable_cs();
     this->busy_pin_->pin_mode(gpio::FLAG_INPUT);
     this->enable();
 
@@ -294,7 +294,7 @@ void IT8951ESensor::setup() {
     this->write_command(IT8951_I80_CMD_VCOM); // tcon vcom get command
     this->write_word(0x0000);
     uint16_t vcom = this->read_word();
-    ESP_LOGE(TAG, "VCOM = -%.02fV", (float)vcom/1000);
+    ESP_LOGE(TAG, "VCOM = %.02fV", (float)vcom/1000);
     if (2300 != vcom) {
         // IT8951SetVCOM
         this->write_command(IT8951_I80_CMD_VCOM); // tcon vcom set command
@@ -304,7 +304,7 @@ void IT8951ESensor::setup() {
         this->write_command(IT8951_I80_CMD_VCOM); // tcon vcom get command
         this->write_word(0x0000);
         uint16_t vcom2 = this->read_word();
-        ESP_LOGE(TAG, "VCOM = -%.02fV", (float)vcom2/1000);
+        ESP_LOGE(TAG, "VCOM = %.02fV", (float)vcom2/1000);
     }
 
     ExternalRAMAllocator<uint8_t> buffer_allocator(ExternalRAMAllocator<uint8_t>::ALLOW_FAILURE);
