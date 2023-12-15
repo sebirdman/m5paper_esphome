@@ -274,7 +274,7 @@ void IT8951ESensor::setup() {
     this->busy_pin_->pin_mode(gpio::FLAG_INPUT);
     this->enable();
 
-    this->get_device_info(this->device_info_);
+    this->get_device_info(&(this->device_info_));
     this->dump_config();
     // get_device_info does not work, so all value hardcoded from https://github.com/m5stack/M5EPD/blob/main/src/M5EPD_Driver.cpp
     this->set_rotation(IT8951_ROTATE_0);
