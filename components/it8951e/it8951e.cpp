@@ -82,10 +82,34 @@ void IT8951ESensor::write_args(uint16_t cmd, uint16_t *args, uint16_t length) {
     }
 }
 
+void IT8951ESensor::set_rotation(uint16_t rotate) {
+    if (rotate < 4) {
+        this->m_rotate = rotate;
+    } else if (rotate < 90) {
+        this->m_rotate = IT8951_ROTATE_0;
+    } else if (rotate < 180) {
+        this->m_rotate = IT8951_ROTATE_90;
+    } else if (rotate < 270) {
+        this->m_rotate = IT8951_ROTATE_180;
+    } else {
+        this->m_rotate = IT8951_ROTATE_270;
+    }
+
+    if (this->m_rotate == IT8951_ROTATE_0 || this->m_rotate == IT8951_ROTATE_180) {
+        this->m_direction = IT8951_DIRECTION_PORTRAIT;
+        this->device_info_.usPanelW = M5EPD_PANEL_W;
+        this->device_info_.usPanelH = M5EPD_PANEL_H;
+    } else {
+        this->m_direction = IT8951_DIRECTION_LANDSCAPE;
+        this->device_info_.usPanelW = M5EPD_PANEL_H;
+        this->device_info_.usPanelH = M5EPD_PANEL_W;
+    }
+}
+
 void IT8951ESensor::set_area(uint16_t x, uint16_t y, uint16_t w,
                                   uint16_t h) {
     uint16_t args[5];
-    args[0] = (IT8951_LDIMG_B_ENDIAN << 8 | IT8951_4BPP << 4);
+    args[0] = (IT8951_LDIMG_B_ENDIAN << 8 | IT8951_4BPP << 4 | this->m_rotate);
     args[1] = x;
     args[2] = y;
     args[3] = w;
@@ -132,6 +156,10 @@ void IT8951ESensor::update_area(uint16_t x, uint16_t y, uint16_t w,
         return;
     }
 
+    // rounded up to be multiple of 4
+    x = (x + 3) & 0xFFFC;
+    y = (y + 3) & 0xFFFC;
+
     //this->check_busy(); keeps timing out...
     this->wait_busy();
 
@@ -142,9 +170,30 @@ void IT8951ESensor::update_area(uint16_t x, uint16_t y, uint16_t w,
         h = this->get_height_internal() - y;
     }
 
+    uint16_t tmp_x = x;
+    uint16_t tmp_y = y;
+    switch (this->m_rotate) {
+        case IT8951_ROTATE_0:
+            tmp_x = x;
+            tmp_y = y;
+            break;
+        case IT8951_ROTATE_90:
+            tmp_x = y;
+            tmp_y = M5EPD_PANEL_H - w - x;
+            break;
+        case IT8951_ROTATE_180:
+            tmp_x = M5EPD_PANEL_W - w - x;
+            tmp_y = M5EPD_PANEL_H - h - y;
+            break;
+        case IT8951_ROTATE_270:
+            tmp_x = M5EPD_PANEL_W - h - y;
+            tmp_y = x;
+            break;
+    }
+
     uint16_t args[7];
-    args[0] = x;
-    args[1] = y;
+    args[0] = tmp_x;
+    args[1] = tmp_y;
     args[2] = w;
     args[3] = h;
     args[4] = mode;
@@ -231,12 +280,11 @@ void IT8951ESensor::setup() {
 
 //    get_device_info(this->device_info_);
     // get_device_info does not work, so all value hardcoded from https://github.com/m5stack/M5EPD/blob/main/src/M5EPD_Driver.cpp
-    device_info_.usPanelW = M5EPD_PANEL_W;
-    device_info_.usPanelH = M5EPD_PANEL_H;
-    device_info_.usImgBufAddrL = 0x36E0;
-    device_info_.usImgBufAddrH = 0x0012;
-    memcpy(device_info_.usFWVersion, "m5paper", 8);
-    memcpy(device_info_.usLUTVersion, "m5paper", 8);
+    set_rotation(IT8951_ROTATE_0);
+    this->device_info_.usImgBufAddrL = 0x36E0;
+    this->device_info_.usImgBufAddrH = 0x0012;
+    memcpy(this->device_info_.usFWVersion, "m5paper", 8);
+    memcpy(this->device_info_.usLUTVersion, "m5paper", 8);
 
     ExternalRAMAllocator<uint8_t> buffer_allocator(ExternalRAMAllocator<uint8_t>::ALLOW_FAILURE);
     this->should_write_buffer_ = buffer_allocator.allocate(this->get_buffer_length_());
