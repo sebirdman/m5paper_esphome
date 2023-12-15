@@ -149,7 +149,8 @@ typedef enum               //             Typical
 
   uint32_t max_x = 0;
   uint32_t max_y = 0;
-  uint8_t m_direction, m_rotate;
+  uint8_t m_rotate = IT8951_ROTATE_0;
+  uint8_t m_direction = IT8951_DIRECTION_PORTRAIT;
 
   GPIOPin *reset_pin_{nullptr};
   GPIOPin *busy_pin_{nullptr};
