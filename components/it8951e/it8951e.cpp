@@ -200,9 +200,9 @@ void IT8951ESensor::update_area(uint16_t x, uint16_t y, uint16_t w,
     args[5] = this->device_info_.usImgBufAddrL;
     args[6] = this->device_info_.usImgBufAddrH;
 
-//    this->enable();
+    this->enable();
     this->write_args(IT8951_I80_CMD_DPY_BUF_AREA, args, 7);
-//    this->disable();
+    this->disable();
 }
 
 void IT8951ESensor::reset(void) {
@@ -314,7 +314,7 @@ void IT8951ESensor::setup() {
         return;
     }
 
-//    this->disable();
+    this->disable();
 
     this->init_internal_(this->get_buffer_length_());
 
@@ -343,7 +343,7 @@ void IT8951ESensor::write_buffer_to_display(uint16_t x, uint16_t y, uint16_t w,
         return;
     }
 
-//    this->enable();
+    this->enable();
     this->set_target_memory_addr(this->device_info_.usImgBufAddrL | (this->device_info_.usImgBufAddrH << 16));
     this->set_area(x, y, w, h);
 
@@ -363,7 +363,7 @@ void IT8951ESensor::write_buffer_to_display(uint16_t x, uint16_t y, uint16_t w,
     }
 
     this->write_command(IT8951_TCON_LD_IMG_END);
-//    this->disable();
+    this->disable();
 }
 
 void IT8951ESensor::write_display() {
@@ -385,7 +385,7 @@ void IT8951ESensor::write_display() {
 void IT8951ESensor::clear(bool init) {
     this->m_endian_type = IT8951_LDIMG_L_ENDIAN;
     this->m_pix_bpp     = IT8951_4BPP;
-//    this->enable();
+    this->enable();
 
     this->set_target_memory_addr(this->device_info_.usImgBufAddrL | (this->device_info_.usImgBufAddrH << 16));
     this->set_area(0, 0, this->get_width_internal(), this->get_height_internal());    
@@ -399,7 +399,7 @@ void IT8951ESensor::clear(bool init) {
 
     this->write_command(IT8951_TCON_LD_IMG_END);
 
-//    this->disable();
+    this->disable();
 
     if (init) {
         this->update_area(0, 0, this->get_width_internal(), this->get_height_internal(), UPDATE_MODE_INIT);
