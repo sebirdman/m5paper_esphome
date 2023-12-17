@@ -37,8 +37,17 @@ void IT8951ESensor::disable_cs() {
 }
 
 uint16_t IT8951ESensor::read_word() {
-    uint16_t word;
-    this->read_words(&word, 2);
+    this->wait_busy();
+    this->enable_cs();
+    this->write_byte16(0x1000);
+    this->wait_busy();
+
+    // dummy
+    this->write_byte16(0x0000);
+    this->wait_busy();
+
+    uint16_t word = this->transfer16(0x0000);
+    this->disable_cs();
     return word;
 }
 
@@ -209,29 +218,20 @@ void IT8951ESensor::reset(void) {
 }
 
 void IT8951ESensor::read_words(void *buf, uint32_t length) {
-    this->wait_busy();
-    this->enable_cs();
-    this->write_byte16(0x1000);
-    this->wait_busy();
-
-    // dummy
-    this->write_byte16(0x0000);
-    this->wait_busy();
-
     ExternalRAMAllocator<uint16_t> allocator(ExternalRAMAllocator<uint16_t>::ALLOW_FAILURE);
     uint16_t *buffer = allocator.allocate(length);
     if (buffer == nullptr) {
-        ESP_LOGE(TAG, "Read FAILED.");
+        ESP_LOGE(TAG, "Read FAILED to allocate.");
         return;
     }
 
-    this->read(&buffer, length);
+    for (size_t i = 0; i < length; i++) {
+        buffer[i] = this->read_word();
+    }
 
     memcpy(buf, buffer, length);
 
     allocator.deallocate(buffer, length);
-
-    this->disable_cs();
 }
 
 uint32_t IT8951ESensor::get_buffer_length_() { return this->get_width_internal() * this->get_height_internal(); }
