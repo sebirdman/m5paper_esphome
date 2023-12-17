@@ -94,7 +94,7 @@ class SPIComponent : public Component {
       return this->hw_spi_->transfer16(0x0000);
     }
 #endif  // USE_SPI_ARDUINO_BACKEND
-    return this->read_array(0x0000, 2);
+    return this->read_array<BIT_ORDER, CLOCK_POLARITY, CLOCK_PHASE>(0x0000, 2);
   }
 
   template<SPIBitOrder BIT_ORDER, SPIClockPolarity CLOCK_POLARITY, SPIClockPhase CLOCK_PHASE>
