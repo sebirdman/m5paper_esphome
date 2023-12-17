@@ -42,9 +42,8 @@ uint16_t IT8951ESensor::read_word() {
     this->write_byte16(0x1000);
     this->wait_busy();
 
-    // dummy - https://github.com/waveshare/IT8951/blob/master/IT8951.c#L108
-    this->transfer_byte(0);
-    this->transfer_byte(0);
+    // dummy
+    this->write_byte16(0x0000);
     this->wait_busy();
 
     uint16_t word = this->transfer_byte(0) << 8;
@@ -63,8 +62,14 @@ void IT8951ESensor::write_word(uint16_t cmd) {
 
 void IT8951ESensor::write_reg(uint16_t addr, uint16_t data) {
     this->write_command(0x0011);  // tcon write reg command
-    this->write_word(addr);
-    this->write_word(data);
+    this->wait_busy();
+    this->enable_cs();
+    this->write_byte(0x0000); // Preamble
+    this->wait_busy();
+    this->write_byte16(addr);
+    this->wait_busy();
+    this->write_byte16(data);
+    this->disable_cs();
 }
 
 void IT8951ESensor::set_target_memory_addr(uint32_t tar_addr) {
