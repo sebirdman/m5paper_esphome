@@ -46,7 +46,7 @@ uint16_t IT8951ESensor::read_word() {
     this->write_byte16(0x0000);
     this->wait_busy();
 
-    uint16_t word = this->transfer16(0x0000);
+    uint16_t word = this->read16(0x0000);
     this->disable_cs();
     return word;
 }
