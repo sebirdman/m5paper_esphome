@@ -199,5 +199,5 @@ template<typename... Ts> class ClearAction : public Action<Ts...>, public Parent
   void play(Ts... x) override { this->parent_->clear(true); }
 };
 
-}  // namespace empty_spi_sensor
+}  // namespace it8951e
 }  // namespace esphome
