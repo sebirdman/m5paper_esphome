@@ -37,18 +37,8 @@ void IT8951ESensor::disable_cs() {
 }
 
 uint16_t IT8951ESensor::read_word() {
-    this->wait_busy();
-    this->enable_cs();
-    this->write_byte16(0x1000);
-    this->wait_busy();
-
-    // dummy
-    this->write_byte16(0x0000);
-    this->wait_busy();
-
-    uint16_t word = this->transfer_byte(0) << 8;
-    word |= this->transfer_byte(0);
-    this->disable_cs();
+    uint16_t word;
+    this->read_words(&word, 2);
     return word;
 }
 
@@ -219,15 +209,13 @@ void IT8951ESensor::reset(void) {
 }
 
 void IT8951ESensor::read_words(void *buf, uint32_t length) {
-    // uint16_t dummy;
     this->wait_busy();
     this->enable_cs();
     this->write_byte16(0x1000);
     this->wait_busy();
 
     // dummy
-    this->transfer_byte(0);
-    this->transfer_byte(0);
+    this->write_byte16(0x0000);
     this->wait_busy();
 
     ExternalRAMAllocator<uint16_t> allocator(ExternalRAMAllocator<uint16_t>::ALLOW_FAILURE);
@@ -237,10 +225,7 @@ void IT8951ESensor::read_words(void *buf, uint32_t length) {
         return;
     }
 
-    for (size_t i = 0; i < length; i++) {
-        buffer[i] = this->transfer_byte(0x00) << 8;
-        buffer[i] |= this->transfer_byte(0x00);
-    }
+    this->read(&buffer, length);
 
     memcpy(buf, buffer, length);
 
