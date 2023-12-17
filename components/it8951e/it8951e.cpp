@@ -442,5 +442,5 @@ void IT8951ESensor::dump_config(){
     );
 }
 
-}  // namespace empty_spi_sensor
+}  // namespace it8951e
 }  // namespace esphome
