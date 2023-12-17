@@ -88,6 +88,15 @@ class SPIComponent : public Component {
     return this->transfer_<BIT_ORDER, CLOCK_POLARITY, CLOCK_PHASE, true, false>(0x00);
   }
 
+  template<SPIBitOrder BIT_ORDER, SPIClockPolarity CLOCK_POLARITY, SPIClockPhase CLOCK_PHASE> uint16_t read16() {
+#ifdef USE_SPI_ARDUINO_BACKEND
+    if (this->hw_spi_ != nullptr) {
+      return this->hw_spi_->transfer16(0x0000);
+    }
+#endif  // USE_SPI_ARDUINO_BACKEND
+    return this->read_array(0x0000, 2);
+  }
+
   template<SPIBitOrder BIT_ORDER, SPIClockPolarity CLOCK_POLARITY, SPIClockPhase CLOCK_PHASE>
   void read_array(uint8_t *data, size_t length) {
 #ifdef USE_SPI_ARDUINO_BACKEND
@@ -278,6 +287,8 @@ class SPIDevice {
   void disable() { this->parent_->disable(); }
 
   uint8_t read_byte() { return this->parent_->template read_byte<BIT_ORDER, CLOCK_POLARITY, CLOCK_PHASE>(); }
+
+  uint16_t read16() { return this->parent_->template read16<BIT_ORDER, CLOCK_POLARITY, CLOCK_PHASE>(); }
 
   void read_array(uint8_t *data, size_t length) {
     return this->parent_->template read_array<BIT_ORDER, CLOCK_POLARITY, CLOCK_PHASE>(data, length);
