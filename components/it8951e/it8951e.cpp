@@ -212,7 +212,7 @@ void IT8951ESensor::update_area(uint16_t x, uint16_t y, uint16_t w,
 void IT8951ESensor::reset(void) {
     this->reset_pin_->digital_write(true);
     this->reset_pin_->digital_write(false);
-    delay(20);
+    delay(100);
     this->reset_pin_->digital_write(true);
     delay(100);
 }
@@ -224,10 +224,21 @@ void IT8951ESensor::read_words(void *buf, uint32_t length) {
         ESP_LOGE(TAG, "Read FAILED to allocate.");
         return;
     }
+    
+    this->wait_busy();
+    this->enable_cs();
+    this->write_byte16(0x1000);
+    this->wait_busy();
+
+    // dummy
+    this->write_byte16(0x0000);
+    this->wait_busy();
 
     for (size_t i = 0; i < length; i++) {
-        buffer[i] = this->read_word();
+        buffer[i] = this->read16();
     }
+    
+    this->disable_cs();
 
     memcpy(buf, buffer, length);
 
