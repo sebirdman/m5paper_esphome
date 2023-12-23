@@ -3,6 +3,7 @@ import esphome.config_validation as cv
 from esphome import pins
 from esphome import automation
 from esphome.components import display, spi
+from esphome.const import __version__ as ESPHOME_VERSION
 from esphome.const import (
     CONF_NAME,
     CONF_ID,
