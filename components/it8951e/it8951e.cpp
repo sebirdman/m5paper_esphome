@@ -267,6 +267,8 @@ void IT8951ESensor::setup() {
     
     if (nullptr != this->reset_pin_) {
         this->reset_pin_->pin_mode(gpio::FLAG_OUTPUT);
+        this->reset_pin_->digital_write(true);
+        delay(1000);
         this->reset();
     }
 
@@ -304,6 +306,8 @@ void IT8951ESensor::setup() {
     this->init_internal_(this->get_buffer_length_());
 
     delay(1000);
+
+    clear(true);
 }
 
 /** @brief Write the image at the specified location, Partial update
