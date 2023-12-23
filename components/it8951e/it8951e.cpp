@@ -264,15 +264,14 @@ void IT8951ESensor::set_vcom(uint16_t vcom) {
 void IT8951ESensor::setup() {
     ESP_LOGE(TAG, "Init Starting.");
     this->spi_setup();
-    
-    if (nullptr != this->reset_pin_) {
-        this->reset_pin_->pin_mode(gpio::FLAG_OUTPUT);
-        this->reset_pin_->digital_write(true);
-        delay(1000);
-        this->reset();
-    }
 
+    this->reset_pin_->pin_mode(gpio::FLAG_OUTPUT);
     this->busy_pin_->pin_mode(gpio::FLAG_INPUT);
+
+    this->reset_pin_->digital_write(true);
+    delay(1000);
+    this->reset();
+
 
     this->get_device_info(&(this->device_info_));
     this->dump_config();
@@ -308,6 +307,7 @@ void IT8951ESensor::setup() {
     delay(1000);
 
     clear(true);
+    ESP_LOGE(TAG, "Init Done.");
 }
 
 /** @brief Write the image at the specified location, Partial update
