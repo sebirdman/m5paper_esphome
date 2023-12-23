@@ -234,11 +234,10 @@ void IT8951ESensor::update_area(uint16_t x, uint16_t y, uint16_t w,
 }
 
 void IT8951ESensor::reset(void) {
-    this->reset_pin_->digital_write(true);
     this->reset_pin_->digital_write(false);
-    delay(100);
+    delay(this->reset_duration_);
     this->reset_pin_->digital_write(true);
-    delay(100);
+    delay(200);
 }
 
 uint32_t IT8951ESensor::get_buffer_length_() { return this->get_width_internal() * this->get_height_internal(); }
@@ -269,7 +268,6 @@ void IT8951ESensor::setup() {
     if (nullptr != this->reset_pin_) {
         this->reset_pin_->pin_mode(gpio::FLAG_OUTPUT);
         this->reset();
-        delay(1000);
     }
 
     this->busy_pin_->pin_mode(gpio::FLAG_INPUT);

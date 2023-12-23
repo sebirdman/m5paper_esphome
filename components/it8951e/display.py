@@ -1,6 +1,6 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome import pins
+from esphome import core, pins
 from esphome import automation
 from esphome.components import display, spi
 from esphome.const import __version__ as ESPHOME_VERSION
@@ -8,6 +8,7 @@ from esphome.const import (
     CONF_NAME,
     CONF_ID,
     CONF_RESET_PIN,
+    CONF_RESET_DURATION,
     CONF_BUSY_PIN,
     CONF_PAGES,
     CONF_LAMBDA,
@@ -30,6 +31,10 @@ CONFIG_SCHEMA = cv.All(
             cv.Required(CONF_RESET_PIN): pins.gpio_output_pin_schema,
             cv.Required(CONF_BUSY_PIN): pins.gpio_input_pin_schema,
             cv.Optional(CONF_REVERSED): cv.boolean,
+            cv.Optional(CONF_RESET_DURATION): cv.All(
+                cv.positive_time_period_milliseconds,
+                cv.Range(max=core.TimePeriod(milliseconds=500)),
+            ),
         }
     )
     .extend(cv.polling_component_schema("1s"))
@@ -71,3 +76,5 @@ async def to_code(config):
         cg.add(var.set_busy_pin(busy))
     if CONF_REVERSED in config:
         cg.add(var.set_reversed(config[CONF_REVERSED]))
+    if CONF_RESET_DURATION in config:
+        cg.add(var.set_reset_duration(config[CONF_RESET_DURATION]))
