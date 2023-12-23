@@ -14,31 +14,22 @@ static const char *TAG = "it8951e.display";
 
 void IT8951ESensor::write_two_byte16(uint16_t type, uint16_t cmd) {
     this->wait_busy();
-    this->enable_cs();
+    this->enable();
 
     this->write_byte16(type);
     this->wait_busy();
     this->write_byte16(cmd); 
 
-    this->disable_cs();
-}
-
-void IT8951ESensor::enable_cs() {
-    this->cs_pin_->digital_write(false);
+    this->disable();
 }
 
 float IT8951ESensor::get_loop_priority() const { return 0.0f; }
 
 float IT8951ESensor::get_setup_priority() const { return setup_priority::HARDWARE; }
 
-
-void IT8951ESensor::disable_cs() {
-    this->cs_pin_->digital_write(true);
-}
-
 uint16_t IT8951ESensor::read_word() {
     this->wait_busy();
-    this->enable_cs();
+    this->enable();
     this->write_byte16(0x1000);
     this->wait_busy();
 
@@ -50,7 +41,7 @@ uint16_t IT8951ESensor::read_word() {
     this->read_array(recv, sizeof(recv));
     uint16_t word = encode_uint16(recv[0], recv[1]);
 
-    this->disable_cs();
+    this->disable();
     return word;
 }
 
@@ -63,7 +54,7 @@ void IT8951ESensor::read_words(void *buf, uint32_t length) {
     }
 
     this->wait_busy();
-    this->enable_cs();
+    this->enable();
     this->write_byte16(0x1000);
     this->wait_busy();
 
@@ -77,7 +68,7 @@ void IT8951ESensor::read_words(void *buf, uint32_t length) {
         buffer[i] = encode_uint16(recv[0], recv[1]);
     }
 
-    this->disable_cs();
+    this->disable();
 
     memcpy(buf, buffer, length);
 
@@ -95,13 +86,13 @@ void IT8951ESensor::write_word(uint16_t cmd) {
 void IT8951ESensor::write_reg(uint16_t addr, uint16_t data) {
     this->write_command(0x0011);  // tcon write reg command
     this->wait_busy();
-    this->enable_cs();
+    this->enable();
     this->write_byte(0x0000); // Preamble
     this->wait_busy();
     this->write_byte16(addr);
     this->wait_busy();
     this->write_byte16(data);
-    this->disable_cs();
+    this->disable();
 }
 
 void IT8951ESensor::set_target_memory_addr(uint32_t tar_addr) {
@@ -114,9 +105,11 @@ void IT8951ESensor::set_target_memory_addr(uint32_t tar_addr) {
 
 void IT8951ESensor::write_args(uint16_t cmd, uint16_t *args, uint16_t length) {
     this->write_command(cmd);
+    this->enable();
     for (uint16_t i = 0; i < length; i++) {
         this->write_word(args[i]);
     }
+    this->disable();
 }
 
 void IT8951ESensor::set_rotation(uint16_t rotate) {
@@ -237,9 +230,7 @@ void IT8951ESensor::update_area(uint16_t x, uint16_t y, uint16_t w,
     args[5] = this->device_info_.usImgBufAddrL;
     args[6] = this->device_info_.usImgBufAddrH;
 
-    this->enable();
     this->write_args(IT8951_I80_CMD_DPY_BUF_AREA, args, 7);
-    this->disable();
 }
 
 void IT8951ESensor::reset(void) {
@@ -280,11 +271,8 @@ void IT8951ESensor::setup() {
         this->reset();
         delay(1000);
     }
-    
-    this->cs_pin_->pin_mode(gpio::FLAG_OUTPUT);
-    this->disable_cs();
+
     this->busy_pin_->pin_mode(gpio::FLAG_INPUT);
-    this->enable();
 
     this->get_device_info(&(this->device_info_));
     this->dump_config();
@@ -314,8 +302,7 @@ void IT8951ESensor::setup() {
         ESP_LOGE(TAG, "Init FAILED.");
         return;
     }
-    
-    this->disable();
+
     this->init_internal_(this->get_buffer_length_());
 
     delay(1000);
@@ -351,10 +338,10 @@ void IT8951ESensor::write_buffer_to_display(uint16_t x, uint16_t y, uint16_t w,
             word = 0xFFFF - word;
         }
 
-        this->enable_cs();
+        this->enable();
         this->write_byte16(0);
         this->write_byte16(word);
-        this->disable_cs();
+        this->disable();
         pos += 2;
     }
 
@@ -388,10 +375,10 @@ void IT8951ESensor::clear(bool init) {
     uint32_t looping = (this->get_width_internal() * this->get_height_internal()) >> 2;
 
     for (uint32_t x = 0; x < looping; x++) {
-        this->enable_cs();
+        this->enable();
         this->write_byte16(0x0000);
         this->write_byte16(0xFFFF);
-        this->disable_cs();
+        this->disable();
     }
 
     this->write_command(IT8951_TCON_LD_IMG_END);
