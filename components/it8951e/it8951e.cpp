@@ -46,9 +46,42 @@ uint16_t IT8951ESensor::read_word() {
     this->write_byte16(0x0000);
     this->wait_busy();
 
-    uint16_t word = this->read16();
+    uint8_t recv[2];
+    this->read_array(recv, sizeof(recv));
+    uint16_t word = encode_uint16(recv[0], recv[1]);
+
     this->disable_cs();
     return word;
+}
+
+void IT8951ESensor::read_words(void *buf, uint32_t length) {
+    ExternalRAMAllocator<uint16_t> allocator(ExternalRAMAllocator<uint16_t>::ALLOW_FAILURE);
+    uint16_t *buffer = allocator.allocate(length);
+    if (buffer == nullptr) {
+        ESP_LOGE(TAG, "Read FAILED to allocate.");
+        return;
+    }
+
+    this->wait_busy();
+    this->enable_cs();
+    this->write_byte16(0x1000);
+    this->wait_busy();
+
+    // dummy
+    this->write_byte16(0x0000);
+    this->wait_busy();
+
+    for (size_t i = 0; i < length; i++) {
+        uint8_t recv[2];
+        this->read_array(recv, sizeof(recv));
+        buffer[i] = encode_uint16(recv[0], recv[1]);
+    }
+
+    this->disable_cs();
+
+    memcpy(buf, buffer, length);
+
+    allocator.deallocate(buffer, length);
 }
 
 void IT8951ESensor:: write_command(uint16_t cmd) {
@@ -215,34 +248,6 @@ void IT8951ESensor::reset(void) {
     delay(100);
     this->reset_pin_->digital_write(true);
     delay(100);
-}
-
-void IT8951ESensor::read_words(void *buf, uint32_t length) {
-    ExternalRAMAllocator<uint16_t> allocator(ExternalRAMAllocator<uint16_t>::ALLOW_FAILURE);
-    uint16_t *buffer = allocator.allocate(length);
-    if (buffer == nullptr) {
-        ESP_LOGE(TAG, "Read FAILED to allocate.");
-        return;
-    }
-    
-    this->wait_busy();
-    this->enable_cs();
-    this->write_byte16(0x1000);
-    this->wait_busy();
-
-    // dummy
-    this->write_byte16(0x0000);
-    this->wait_busy();
-
-    for (size_t i = 0; i < length; i++) {
-        buffer[i] = this->read16();
-    }
-    
-    this->disable_cs();
-
-    memcpy(buf, buffer, length);
-
-    allocator.deallocate(buffer, length);
 }
 
 uint32_t IT8951ESensor::get_buffer_length_() { return this->get_width_internal() * this->get_height_internal(); }
