@@ -9,9 +9,9 @@ namespace esphome {
 namespace it8951e {
 
 #if ESPHOME_VERSION_CODE >= VERSION_CODE(2023, 12, 0)
-class IT8951ESensor : public display::DisplayBuffer
+class IT8951ESensor : public display::DisplayBuffer,
 #else
-class IT8951ESensor : public PollingComponent, public display::DisplayBuffer
+class IT8951ESensor : public PollingComponent, public display::DisplayBuffer,
 #endif  // VERSION_CODE(2023, 12, 0)
                       public spi::SPIDevice<spi::BIT_ORDER_MSB_FIRST, spi::CLOCK_POLARITY_LOW, spi::CLOCK_PHASE_LEADING,
                                             spi::DATA_RATE_10MHZ> {
