@@ -17,6 +17,7 @@ class M5PaperComponent : public PollingComponent {
     void setup() override;
     void update() override;
     void dump_config() override;
+    float get_setup_priority() const override { return setup_priority::HARDWARE; };
 
     public:
         void set_battery_power_pin(GPIOPin *power) { this->battery_power_pin_ = power; }

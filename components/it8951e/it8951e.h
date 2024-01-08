@@ -14,10 +14,10 @@ class IT8951ESensor : public display::DisplayBuffer,
 class IT8951ESensor : public PollingComponent, public display::DisplayBuffer,
 #endif  // VERSION_CODE(2023, 12, 0)
                       public spi::SPIDevice<spi::BIT_ORDER_MSB_FIRST, spi::CLOCK_POLARITY_LOW, spi::CLOCK_PHASE_LEADING,
-                                            spi::DATA_RATE_4MHZ> {
+                                            spi::DATA_RATE_2MHZ> {
  public:
-  float get_loop_priority() const override;
-  float get_setup_priority() const override;
+  float get_loop_priority() const override { return 0.0f; };
+  float get_setup_priority() const override { return setup_priority::HARDWARE; };
 
 /*
 ---------------------------------------- Refresh mode description
@@ -120,6 +120,7 @@ typedef enum               //             Typical
 
   void set_reset_pin(GPIOPin *reset) { this->reset_pin_ = reset; }
   void set_busy_pin(GPIOPin *busy) { this->busy_pin_ = busy; }
+
   void set_rotation(uint16_t rotate);
   void set_reversed(bool reversed) { this->reversed_ = reversed; }
   void set_reset_duration(uint32_t reset_duration) { this->reset_duration_ = reset_duration; }

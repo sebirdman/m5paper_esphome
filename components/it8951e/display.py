@@ -15,11 +15,11 @@ from esphome.const import (
     CONF_REVERSED,
 )
 
-DEPENDENCIES = ['spi']
+DEPENDENCIES = ['spi', 'm5paper']
 
 it8951e_ns = cg.esphome_ns.namespace('it8951e')
 IT8951ESensor = it8951e_ns.class_(
-    'IT8951ESensor', cg.PollingComponent, display.Display, display.DisplayBuffer, spi.SPIDevice
+    'IT8951ESensor', cg.PollingComponent, spi.SPIDevice, display.DisplayBuffer, display.Display
 )
 ClearAction = it8951e_ns.class_("ClearAction", automation.Action)
 

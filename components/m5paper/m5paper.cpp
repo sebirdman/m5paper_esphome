@@ -68,5 +68,5 @@ void M5PaperComponent::dump_config() {
     ESP_LOGCONFIG(TAG, "Empty custom sensor");
 }
 
-} //namespace empty_sensor
+} //namespace m5paper
 } //namespace esphome
