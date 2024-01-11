@@ -7,9 +7,12 @@
 namespace esphome {
 namespace it8951e {
 
-
+//TODO: create model M5EPD
 #define M5EPD_PANEL_W 960
 #define M5EPD_PANEL_H 540
+#define M5EPD_PANEL_ADDRL 0x36E0
+#define M5EPD_PANEL_ADDRH 0x0012
+
 static const char *TAG = "it8951e.display";
 
 void IT8951ESensor::write_two_byte16(uint16_t type, uint16_t cmd) {
@@ -101,11 +104,9 @@ void IT8951ESensor::set_target_memory_addr(uint32_t tar_addr) {
 
 void IT8951ESensor::write_args(uint16_t cmd, uint16_t *args, uint16_t length) {
     this->write_command(cmd);
-    this->enable();
     for (uint16_t i = 0; i < length; i++) {
         this->write_word(args[i]);
     }
-    this->disable();
 }
 
 void IT8951ESensor::set_rotation(uint16_t rotate) {
@@ -229,11 +230,10 @@ void IT8951ESensor::update_area(uint16_t x, uint16_t y, uint16_t w,
 
 void IT8951ESensor::reset(void) {
     this->reset_pin_->digital_write(true);
-    delay(100);
     this->reset_pin_->digital_write(false);
     delay(this->reset_duration_);
     this->reset_pin_->digital_write(true);
-    delay(300);
+    delay(100);
 }
 
 uint32_t IT8951ESensor::get_buffer_length_() { return this->get_width_internal() * this->get_height_internal(); }
@@ -258,7 +258,7 @@ void IT8951ESensor::set_vcom(uint16_t vcom) {
 }
 
 void IT8951ESensor::setup() {
-    ESP_LOGE(TAG, "Init Starting.");
+    ESP_LOGCONFIG(TAG, "Init Starting.");
     this->spi_setup();
 
     if (nullptr != this->reset_pin_) {
@@ -270,6 +270,14 @@ void IT8951ESensor::setup() {
 
     this->get_device_info(&(this->device_info_));
     this->dump_config();
+    if (!this->device_info_.usImgBufAddrH || !this->device_info_.usImgBufAddrL) {
+        // Sometime it fails to read the device info
+        ESP_LOGE(TAG, "FAILED to read panel image buffer address, try hard...");
+        this->device_info_.usPanelW = M5EPD_PANEL_W;
+        this->device_info_.usPanelH = M5EPD_PANEL_H;
+        this->device_info_.usImgBufAddrL = M5EPD_PANEL_ADDRL;
+        this->device_info_.usImgBufAddrH = M5EPD_PANEL_ADDRH;
+    }
     this->set_rotation(IT8951_ROTATE_0);
 
     this->write_command(IT8951_TCON_SYS_RUN);
@@ -293,8 +301,7 @@ void IT8951ESensor::setup() {
 
     this->init_internal_(this->get_buffer_length_());
 
-    clear(true);
-    ESP_LOGE(TAG, "Init Done.");
+    ESP_LOGCONFIG(TAG, "Init Done.");
 }
 
 /** @brief Write the image at the specified location, Partial update
@@ -420,7 +427,7 @@ int IT8951ESensor::get_height_internal() {
 }
 
 void IT8951ESensor::dump_config() {
-    ESP_LOGE(TAG, "Height:%d Width:%d LUT: %s, FW: %s, Mem:%x", 
+    ESP_LOGI(TAG, "Height:%d Width:%d LUT: %s, FW: %s, Mem:%x",
         this->device_info_.usPanelH, 
         this->device_info_.usPanelW,
         this->device_info_.usLUTVersion,
