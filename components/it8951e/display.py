@@ -15,7 +15,7 @@ from esphome.const import (
     CONF_REVERSED,
 )
 
-DEPENDENCIES = ['spi', 'm5paper']
+DEPENDENCIES = ['spi']
 
 it8951e_ns = cg.esphome_ns.namespace('it8951e')
 IT8951ESensor = it8951e_ns.class_(
