@@ -13,13 +13,11 @@ from esphome.const import (
     CONF_REVERSED,
 )
 
-DEPENDENCIES = ['spi']
-
-CONF_DISPLAY_CS_PIN = "display_cs_pin"
+DEPENDENCIES = ['spi', 'm5paper']
 
 it8951e_ns = cg.esphome_ns.namespace('it8951e')
 IT8951ESensor = it8951e_ns.class_(
-    'IT8951ESensor', cg.PollingComponent, spi.SPIDevice, display.DisplayBuffer
+    'IT8951ESensor', cg.PollingComponent, spi.SPIDevice, display.DisplayBuffer, display.Display
 )
 ClearAction = it8951e_ns.class_("ClearAction", automation.Action)
 
@@ -30,12 +28,11 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_NAME): cv.string,
             cv.Required(CONF_RESET_PIN): pins.gpio_output_pin_schema,
             cv.Required(CONF_BUSY_PIN): pins.gpio_input_pin_schema,
-            cv.Required(CONF_DISPLAY_CS_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_REVERSED): cv.boolean,
         }
     )
     .extend(cv.polling_component_schema("1s"))
-    .extend(spi.spi_device_schema(cs_pin_required=False)),
+    .extend(spi.spi_device_schema(cs_pin_required=True)),
     cv.has_at_most_one_key(CONF_PAGES, CONF_LAMBDA),
 )
 
@@ -56,12 +53,8 @@ async def bm8563_read_time_to_code(config, action_id, template_arg, args):
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await display.register_display(var, config)
-    await cg.register_component(var, config)
     await spi.register_spi_device(var, config)
 
-    if CONF_DISPLAY_CS_PIN in config:
-        cs = await cg.gpio_pin_expression(config[CONF_DISPLAY_CS_PIN])
-        cg.add(var.set_cs_pin(cs))
     if CONF_LAMBDA in config:
         lambda_ = await cg.process_lambda(
             config[CONF_LAMBDA], [(display.DisplayRef, "it")], return_type=cg.void
