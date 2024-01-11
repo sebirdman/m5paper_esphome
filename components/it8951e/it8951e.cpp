@@ -270,7 +270,7 @@ void IT8951ESensor::setup() {
 
     this->get_device_info(&(this->device_info_));
     this->dump_config();
-    if (!this->device_info_.usImgBufAddrH || !this->device_info_.usImgBufAddrL) {
+    if (M5EPD_PANEL_ADDRL != this->device_info_.usImgBufAddrL || M5EPD_PANEL_ADDRH != this->device_info_.usImgBufAddrH) {
         // Sometime it fails to read the device info
         ESP_LOGE(TAG, "FAILED to read panel image buffer address, try hard...");
         this->device_info_.usPanelW = M5EPD_PANEL_W;
@@ -344,13 +344,12 @@ void IT8951ESensor::write_buffer_to_display(uint16_t x, uint16_t y, uint16_t w,
 }
 
 void IT8951ESensor::write_display() {
-    //this->write_command(IT8951_TCON_SYS_RUN);
+    this->write_command(IT8951_TCON_SYS_RUN);
     this->write_buffer_to_display(0, 0, this->max_x, this->max_y, this->buffer_);
     this->update_area(0, 0, this->max_x, this->max_y, UPDATE_MODE_GC16);
-    //this->update_area(0, 0, this->max_x, this->max_y, UPDATE_MODE_DU4);
     this->max_x = 0;
     this->max_y = 0;
-    //this->write_command(IT8951_TCON_SLEEP);
+    this->write_command(IT8951_TCON_SLEEP);
 }
 
 

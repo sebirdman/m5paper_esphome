@@ -103,19 +103,13 @@ typedef struct
 typedef enum               //             Typical
 {                          //   Ghosting  Update Time  Usage
     UPDATE_MODE_INIT = 0,  // * N/A       2000ms       Display initialization,
-    UPDATE_MODE_DU   = 1,  //   Low       260ms        Monochrome menu, text
-                           //   input, and touch screen input
+    UPDATE_MODE_DU   = 1,  //   Low       260ms        Monochrome menu, text input, and touch screen input
     UPDATE_MODE_GC16 = 2,  // * Very Low  450ms        High quality images
-    UPDATE_MODE_GL16 =
-        3,  // * Medium    450ms        Text with white background
-    UPDATE_MODE_GLR16 =
-        4,  //   Low       450ms        Text with white background
-    UPDATE_MODE_GLD16 =
-        5,  //   Low       450ms        Text and graphics with white background
-    UPDATE_MODE_DU4 =
-        6,  // * Medium    120ms        Fast page flipping at reduced contrast
-    UPDATE_MODE_A2 = 7,  //   Medium    290ms        Anti-aliased text in menus
-                         //   / touch and screen input
+    UPDATE_MODE_GL16 = 3,  // * Medium    450ms        Text with white background
+    UPDATE_MODE_GLR16 = 4, //   Low       450ms        Text with white background
+    UPDATE_MODE_GLD16 = 5, //   Low       450ms        Text and graphics with white background
+    UPDATE_MODE_DU4 = 6,   // * Medium    120ms        Fast page flipping at reduced contrast
+    UPDATE_MODE_A2 = 7,    //   Medium    290ms        Anti-aliased text in menus / touch and screen input
     UPDATE_MODE_NONE = 8
 } m5epd_update_mode_t;  // The ones marked with * are more commonly used
 
@@ -132,7 +126,10 @@ typedef enum               //             Typical
   void setup() override;
   void update() override;
   void dump_config() override;
-  display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_BINARY; }
+
+  //TODO: create model M5EPD
+  // M5EPD supports 16 gray scale levels
+  display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_GRAYSCALE; }
 
   void clear(bool init);
 

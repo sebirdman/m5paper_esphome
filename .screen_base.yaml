@@ -2,7 +2,7 @@ esphome:
   name: ${device_id}
   name_add_mac_suffix: true
   on_boot:
-    - priority: 750.0
+    - priority: 600.0
       then:
         - IT8951E.clear
         - delay: 100ms
@@ -19,7 +19,7 @@ esp32:
 
 # Enable logging
 logger:
-  level: VERBOSE
+  level: DEBUG
 
 # Enable psram
 psram:
@@ -172,11 +172,22 @@ i2c:
   sda: GPIO21
   scl: GPIO22
 
+m5paper:
+  battery_power_pin: GPIO5
+  main_power_pin: GPIO2
+  update_interval: 10s
+  battery_voltage:
+    name: ${device_name} battery voltage
+    id: m5paper_battery_voltage
+    device_class: "voltage"
+    state_class: "measurement"
+
 display:
   - platform: it8951e
     id: m5paper_display
-    display_cs_pin: GPIO15
+    cs_pin: GPIO15
     reset_pin: GPIO23
+    reset_duration: 100ms
     busy_pin: GPIO27
     rotation: 0
     reversed: False
@@ -492,7 +503,8 @@ switch:
 
 time:
   - platform: homeassistant
-    id: ha_time
+    id: homeassistant_time
+    timezone: Europe/Paris
     on_time_sync: 
       - bm8563.write_time
   - platform: bm8563
@@ -502,16 +514,6 @@ time:
       - seconds: 0
         then:
           - component.update: m5paper_display
-
-m5paper:
-  battery_power_pin: GPIO5
-  main_power_pin: GPIO2
-  update_interval: 10s
-  battery_voltage:
-    name: ${device_name} battery voltage
-    id: m5paper_battery_voltage
-    device_class: "voltage"
-    state_class: "measurement"
 
 sensor:
   - platform: sht3xd
