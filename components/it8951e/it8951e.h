@@ -1,15 +1,21 @@
 #pragma once
 
 #include "esphome/core/component.h"
+#include "esphome/core/version.h"
 #include "esphome/components/spi/spi.h"
 #include "esphome/components/display/display_buffer.h"
 
 namespace esphome {
 namespace it8951e {
 
+#if ESPHOME_VERSION_CODE >= VERSION_CODE(2023, 12, 0)
 class IT8951ESensor : public display::DisplayBuffer,
+#else
+class IT8951ESensor : public PollingComponent, public display::DisplayBuffer,
+#endif  // VERSION_CODE(2023, 12, 0)
                       public spi::SPIDevice<spi::BIT_ORDER_MSB_FIRST, spi::CLOCK_POLARITY_LOW, spi::CLOCK_PHASE_LEADING,
-                                            spi::DATA_RATE_20MHZ> {
+                      /* May work also with DATA_RATE_20MHZ but I noticed some errors */
+                                            spi::DATA_RATE_10MHZ> {
  public:
   float get_loop_priority() const override { return 0.0f; };
   float get_setup_priority() const override { return setup_priority::HARDWARE; };
@@ -118,6 +124,7 @@ typedef enum               //             Typical
 
   void set_rotation(uint16_t rotate);
   void set_reversed(bool reversed) { this->reversed_ = reversed; }
+  void set_reset_duration(uint32_t reset_duration) { this->reset_duration_ = reset_duration; }
 
   uint8_t get_rotate(void) { return m_rotate; };
   uint8_t get_direction(void) { return m_direction; };
@@ -155,6 +162,7 @@ typedef enum               //             Typical
   GPIOPin *busy_pin_{nullptr};
 
   bool reversed_ = false;
+  uint32_t reset_duration_{100};
 
   void reset(void);
 
