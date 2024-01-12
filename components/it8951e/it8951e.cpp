@@ -273,12 +273,12 @@ void IT8951ESensor::setup() {
     if (M5EPD_PANEL_ADDRL != this->device_info_.usImgBufAddrL || M5EPD_PANEL_ADDRH != this->device_info_.usImgBufAddrH) {
         // Sometime it fails to read the device info
         ESP_LOGE(TAG, "FAILED to read panel image buffer address, try hard...");
-        this->device_info_.usPanelW = M5EPD_PANEL_W;
-        this->device_info_.usPanelH = M5EPD_PANEL_H;
         this->device_info_.usImgBufAddrL = M5EPD_PANEL_ADDRL;
         this->device_info_.usImgBufAddrH = M5EPD_PANEL_ADDRH;
     }
-    this->set_rotation(IT8951_ROTATE_0);
+    // Ensure all variables are correctly initialized
+    // Because set_rotation() can be called before setup()
+    this->set_rotation(this->m_rotate);
 
     this->write_command(IT8951_TCON_SYS_RUN);
 

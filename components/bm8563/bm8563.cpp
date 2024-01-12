@@ -174,7 +174,7 @@ void BM8563::setDate(BM8563_DateTypeDef* BM8563_DateStruct) {
     buf[2] = byteToBcd2(BM8563_DateStruct->month) | 0x00;
   }
 
-  ESP_LOGI(TAG, "WRiting year is %i", buf[3]);
+  ESP_LOGI(TAG, "Writing year is %i", buf[3]);
   this->write_register(0x05, buf, 4);
 }
 
