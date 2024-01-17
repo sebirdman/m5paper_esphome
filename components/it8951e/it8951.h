@@ -30,17 +30,6 @@ IT8951 Command defines
 /*-----------------------------------------------------------------------
  IT8951 Mode defines
 ------------------------------------------------------------------------*/
-
-// Rotate mode
-#define IT8951_ROTATE_0   0
-#define IT8951_ROTATE_90  1
-#define IT8951_ROTATE_180 2
-#define IT8951_ROTATE_270 3
-
-// Direction mode
-#define IT8951_DIRECTION_PORTRAIT 1
-#define IT8951_DIRECTION_LANDSCAPE 0
-
 //Pixel mode (Bit per Pixel)
 #define IT8951_2BPP             0
 #define IT8951_3BPP             1

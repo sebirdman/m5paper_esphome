@@ -8,6 +8,12 @@
 namespace esphome {
 namespace it8951e {
 
+enum it8951eModel
+{
+  M5EPD = 0,
+  it8951eModelsEND // MUST be last
+};
+
 #if ESPHOME_VERSION_CODE >= VERSION_CODE(2023, 12, 0)
 class IT8951ESensor : public display::DisplayBuffer,
 #else
@@ -18,7 +24,7 @@ class IT8951ESensor : public PollingComponent, public display::DisplayBuffer,
                                             spi::DATA_RATE_10MHZ> {
  public:
   float get_loop_priority() const override { return 0.0f; };
-  float get_setup_priority() const override { return setup_priority::HARDWARE; };
+  float get_setup_priority() const override { return setup_priority::PROCESSOR; };
 
 /*
 ---------------------------------------- Refresh mode description
@@ -90,46 +96,47 @@ shown in Figure 1. The use of a white image in the transition from 4-bit to
 
 */
 
-typedef struct
-{
-    uint16_t usPanelW; // these are incorrect
-    uint16_t usPanelH; // on m5paper
-    uint16_t usImgBufAddrL;
-    uint16_t usImgBufAddrH;
-    char usFWVersion[16]; 	// empty on m5paper
-    char usLUTVersion[16]; 	// empty on m5paper
-}IT8951DevInfo;
+  struct IT8951DevInfo_s
+  {
+      uint16_t usPanelW;
+      uint16_t usPanelH;
+      uint16_t usImgBufAddrL;
+      uint16_t usImgBufAddrH;
+      char usFWVersion[16];
+      char usLUTVersion[16];
+  };
 
-typedef enum               //             Typical
-{                          //   Ghosting  Update Time  Usage
-    UPDATE_MODE_INIT = 0,  // * N/A       2000ms       Display initialization,
-    UPDATE_MODE_DU   = 1,  //   Low       260ms        Monochrome menu, text input, and touch screen input
-    UPDATE_MODE_GC16 = 2,  // * Very Low  450ms        High quality images
-    UPDATE_MODE_GL16 = 3,  // * Medium    450ms        Text with white background
-    UPDATE_MODE_GLR16 = 4, //   Low       450ms        Text with white background
-    UPDATE_MODE_GLD16 = 5, //   Low       450ms        Text and graphics with white background
-    UPDATE_MODE_DU4 = 6,   // * Medium    120ms        Fast page flipping at reduced contrast
-    UPDATE_MODE_A2 = 7,    //   Medium    290ms        Anti-aliased text in menus / touch and screen input
-    UPDATE_MODE_NONE = 8
-} m5epd_update_mode_t;  // The ones marked with * are more commonly used
+  struct IT8951Dev_s
+  {
+      struct IT8951DevInfo_s devInfo;
+      display::DisplayType displayType;
+  };
+
+  enum update_mode_e         //             Typical
+  {                          //   Ghosting  Update Time  Usage
+      UPDATE_MODE_INIT = 0,  // * N/A       2000ms       Display initialization,
+      UPDATE_MODE_DU   = 1,  //   Low       260ms        Monochrome menu, text input, and touch screen input
+      UPDATE_MODE_GC16 = 2,  // * Very Low  450ms        High quality images
+      UPDATE_MODE_GL16 = 3,  // * Medium    450ms        Text with white background
+      UPDATE_MODE_GLR16 = 4, //   Low       450ms        Text with white background
+      UPDATE_MODE_GLD16 = 5, //   Low       450ms        Text and graphics with white background
+      UPDATE_MODE_DU4 = 6,   // * Medium    120ms        Fast page flipping at reduced contrast
+      UPDATE_MODE_A2 = 7,    //   Medium    290ms        Anti-aliased text in menus / touch and screen input
+      UPDATE_MODE_NONE = 8
+  };  // The ones marked with * are more commonly used
 
   void set_reset_pin(GPIOPin *reset) { this->reset_pin_ = reset; }
   void set_busy_pin(GPIOPin *busy) { this->busy_pin_ = busy; }
 
-  void set_rotation(uint16_t rotate);
   void set_reversed(bool reversed) { this->reversed_ = reversed; }
   void set_reset_duration(uint32_t reset_duration) { this->reset_duration_ = reset_duration; }
-
-  uint8_t get_rotate(void) { return m_rotate; };
-  uint8_t get_direction(void) { return m_direction; };
+  void set_model(it8951eModel model) { this->model_ = model; }
 
   void setup() override;
   void update() override;
   void dump_config() override;
 
-  //TODO: create model M5EPD
-  // M5EPD supports 16 gray scale levels
-  display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_GRAYSCALE; }
+  display::DisplayType get_display_type() override { return IT8951DevAll[this->model_].displayType; }
 
   void clear(bool init);
 
@@ -144,14 +151,22 @@ typedef enum               //             Typical
 
 
  private:
-  IT8951DevInfo device_info_;
+  struct IT8951Dev_s IT8951DevAll[it8951eModel::it8951eModelsEND]
+  { // it8951eModel::M5EPD
+    960,    // .devInfo.usPanelW
+    540,    // .devInfo.usPanelH
+    0x36E0, // .devInfo.usImgBufAddrL
+    0x0012, // .devInfo.usImgBufAddrH
+    "",     // .devInfo.usFWVersion
+    "",     // .devInfo.usFWVersion
+    display::DisplayType::DISPLAY_TYPE_GRAYSCALE // .displayType (M5EPD supports 16 gray scale levels)
+  };
+
   uint8_t *should_write_buffer_{nullptr};
-  void get_device_info(IT8951DevInfo *info);
+  void get_device_info(struct IT8951DevInfo_s *info);
 
   uint32_t max_x = 0;
   uint32_t max_y = 0;
-  uint8_t m_rotate = 0;
-  uint8_t m_direction = 1;
   uint16_t m_endian_type, m_pix_bpp;
 
 
@@ -160,6 +175,7 @@ typedef enum               //             Typical
 
   bool reversed_ = false;
   uint32_t reset_duration_{100};
+  enum it8951eModel model_{it8951eModel::M5EPD};
 
   void reset(void);
 
@@ -177,12 +193,12 @@ typedef enum               //             Typical
   void write_command(uint16_t cmd);
   void write_word(uint16_t cmd);
   void write_reg(uint16_t addr, uint16_t data);
-  void set_target_memory_addr(uint32_t tar_addr);
+  void set_target_memory_addr(uint16_t tar_addrL, uint16_t tar_addrH);
   void write_args(uint16_t cmd, uint16_t *args, uint16_t length);
 
   void set_area(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
   void update_area(uint16_t x, uint16_t y, uint16_t w,
-                    uint16_t h, m5epd_update_mode_t mode);
+                    uint16_t h, update_mode_e mode);
 
 
 

@@ -16,7 +16,7 @@ namespace m5paper {
 static const char *TAG = "m5paper.component";
 
 void M5PaperComponent::setup() {
-    ESP_LOGE(TAG, "m5paper starting up!");
+    ESP_LOGCONFIG(TAG, "m5paper starting up!");
     this->main_power_pin_->pin_mode(gpio::FLAG_OUTPUT);
     this->main_power_pin_->digital_write(true);
 
@@ -59,13 +59,14 @@ void M5PaperComponent::update() {
 
     float voltage = static_cast<float>(millivolts) * 0.001f;
 
-    if (this->battery_voltage_ != nullptr)
+    if (this->battery_voltage_ != nullptr) {
       this->battery_voltage_->publish_state(voltage);
+    }
     this->status_clear_warning();
 }
 
 void M5PaperComponent::dump_config() {
-    ESP_LOGCONFIG(TAG, "Empty custom sensor");
+    ESP_LOGCONFIG(TAG, "M5Paper");
 }
 
 } //namespace m5paper

@@ -2,11 +2,6 @@ esphome:
   name: ${device_id}
   name_add_mac_suffix: true
   on_boot:
-    - priority: 600.0
-      then:
-        - IT8951E.clear
-        - delay: 100ms
-        - component.update: m5paper_display
     - priority: -100.0
       then:
         - delay: 10s
@@ -83,7 +78,7 @@ globals:
         {"mdi-numeric-8-circle-outline", "󰲯"},
         {"mdi-numeric-9-plus-circle-outline", "󰲳"},
       }
-    
+
 font:
   - file: 'gfonts://Roboto'
     id: normal_font
@@ -109,7 +104,7 @@ font:
       ]
   - file: "fonts/materialdesignicons-webfont.ttf"
     id: weather_font
-    size: 256    
+    size: 256
     glyphs: [
         '󰖔',    #mdi-weather-night
         '󰖐',    #mdi-weather-cloudy
@@ -137,7 +132,7 @@ font:
         '󱊢',    #mdi-battery-medium
         '󱊡',    #mdi-battery-low
         '󱃍',    #mdi-battery-alert-variant-outline
-        '󱊦',    #mdi-battery-charging-high  
+        '󱊦',    #mdi-battery-charging-high
         '󰂑',    #mdi-battery-unknown
       ]
   - file: "fonts/materialdesignicons-webfont.ttf"
@@ -162,7 +157,7 @@ font:
         '󰲯',    #mdi-numeric-8-circle-outline
         '󰲳',    #mdi-numeric-9-plus-circle-outline
       ]
-      
+
 spi:
   clk_pin: GPIO14
   mosi_pin: GPIO12
@@ -171,16 +166,6 @@ spi:
 i2c:
   sda: GPIO21
   scl: GPIO22
-
-m5paper:
-  battery_power_pin: GPIO5
-  main_power_pin: GPIO2
-  update_interval: 10s
-  battery_voltage:
-    name: ${device_name} battery voltage
-    id: m5paper_battery_voltage
-    device_class: "voltage"
-    state_class: "measurement"
 
 display:
   - platform: it8951e
@@ -355,7 +340,7 @@ display:
         float battery_level = id(m5paper_battery_level).state;
         if (NOT_NAN(battery_level))
         {
-          
+
           if (battery_level < 10)
               battery_icon = id(material_icons_map)["mdi-battery-alert-variant-outline"];
           else if (battery_level < 40)
@@ -505,7 +490,7 @@ time:
   - platform: homeassistant
     id: homeassistant_time
     timezone: Europe/Paris
-    on_time_sync: 
+    on_time_sync:
       - bm8563.write_time
   - platform: bm8563
     id: rtc_time
@@ -514,6 +499,16 @@ time:
       - seconds: 0
         then:
           - component.update: m5paper_display
+
+m5paper:
+  battery_power_pin: GPIO5
+  main_power_pin: GPIO2
+  update_interval: 10s
+  battery_voltage:
+    name: ${device_name} battery voltage
+    id: m5paper_battery_voltage
+    device_class: "voltage"
+    state_class: "measurement"
 
 sensor:
   - platform: sht3xd
@@ -554,7 +549,7 @@ sensor:
     entity_id: ${outdoor_temperature}
   - platform: homeassistant
     name: Outdoor humidity
-    id: outdoor_humidity    
+    id: outdoor_humidity
     entity_id: ${outdoor_humidity}
   - platform: homeassistant
     name: Rainfall last hour
@@ -614,21 +609,21 @@ binary_sensor:
     name: ${device_name} right button
     id: right_button
     icon: mdi:gesture-tap-button
-    pin: 
+    pin:
       number: GPIO37
       inverted: true
-    on_release: 
+    on_release:
       - component.update: m5paper_display
   - platform: gpio
     name: ${device_name} BTN/PWR button
     icon: mdi:gesture-tap-button
-    pin: 
+    pin:
       number: GPIO38
       inverted: true
   - platform: gpio
     name: ${device_name} left button
     icon: mdi:gesture-tap-button
-    pin: 
+    pin:
       number: GPIO39
       inverted: true
   - platform: homeassistant

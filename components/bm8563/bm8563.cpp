@@ -71,13 +71,13 @@ void BM8563::read_time() {
   BM8563_DateTypeDef BM8563_DateStruct;
   getTime(&BM8563_TimeStruct);
   getDate(&BM8563_DateStruct);
-  ESP_LOGD(TAG, "BM8563: %i-%i-%i %i, %i:%i:%i", 
+  ESP_LOGD(TAG, "BM8563: %i-%i-%i %i, %i:%i:%i",
     BM8563_DateStruct.year,
     BM8563_DateStruct.month,
     BM8563_DateStruct.day,
     BM8563_DateStruct.week,
-    BM8563_TimeStruct.hours, 
-    BM8563_TimeStruct.minutes, 
+    BM8563_TimeStruct.hours,
+    BM8563_TimeStruct.minutes,
     BM8563_TimeStruct.seconds
   );
 
@@ -131,8 +131,8 @@ void BM8563::setTime(BM8563_TimeTypeDef* BM8563_TimeStruct) {
     return;
   }
   uint8_t buf[3] = {
-    byteToBcd2(BM8563_TimeStruct->seconds), 
-    byteToBcd2(BM8563_TimeStruct->minutes), 
+    byteToBcd2(BM8563_TimeStruct->seconds),
+    byteToBcd2(BM8563_TimeStruct->minutes),
     byteToBcd2(BM8563_TimeStruct->hours)
   };
 
@@ -161,9 +161,9 @@ void BM8563::setDate(BM8563_DateTypeDef* BM8563_DateStruct) {
     return;
   }
   uint8_t buf[4] = {
-    byteToBcd2(BM8563_DateStruct->day), 
+    byteToBcd2(BM8563_DateStruct->day),
     byteToBcd2(BM8563_DateStruct->week),
-    byteToBcd2(BM8563_DateStruct->month), 
+    byteToBcd2(BM8563_DateStruct->month),
     byteToBcd2((uint8_t)(BM8563_DateStruct->year % 100)),
   };
 

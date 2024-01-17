@@ -7,12 +7,6 @@
 namespace esphome {
 namespace it8951e {
 
-//TODO: create model M5EPD
-#define M5EPD_PANEL_W 960
-#define M5EPD_PANEL_H 540
-#define M5EPD_PANEL_ADDRL 0x36E0
-#define M5EPD_PANEL_ADDRH 0x0012
-
 static const char *TAG = "it8951e.display";
 
 void IT8951ESensor::write_two_byte16(uint16_t type, uint16_t cmd) {
@@ -21,7 +15,7 @@ void IT8951ESensor::write_two_byte16(uint16_t type, uint16_t cmd) {
 
     this->write_byte16(type);
     this->wait_busy();
-    this->write_byte16(cmd); 
+    this->write_byte16(cmd);
 
     this->disable();
 }
@@ -94,12 +88,9 @@ void IT8951ESensor::write_reg(uint16_t addr, uint16_t data) {
     this->disable();
 }
 
-void IT8951ESensor::set_target_memory_addr(uint32_t tar_addr) {
-    uint16_t h = (uint16_t)((tar_addr >> 16) & 0x0000FFFF);
-    uint16_t l = (uint16_t)(tar_addr & 0x0000FFFF);
-
-    this->write_reg(IT8951_LISAR + 2, h);
-    this->write_reg(IT8951_LISAR, l);
+void IT8951ESensor::set_target_memory_addr(uint16_t tar_addrL, uint16_t tar_addrH) {
+    this->write_reg(IT8951_LISAR + 2, tar_addrH);
+    this->write_reg(IT8951_LISAR, tar_addrL);
 }
 
 void IT8951ESensor::write_args(uint16_t cmd, uint16_t *args, uint16_t length) {
@@ -109,34 +100,11 @@ void IT8951ESensor::write_args(uint16_t cmd, uint16_t *args, uint16_t length) {
     }
 }
 
-void IT8951ESensor::set_rotation(uint16_t rotate) {
-    if (rotate < 4) {
-        this->m_rotate = rotate;
-    } else if (rotate < 90) {
-        this->m_rotate = IT8951_ROTATE_0;
-    } else if (rotate < 180) {
-        this->m_rotate = IT8951_ROTATE_90;
-    } else if (rotate < 270) {
-        this->m_rotate = IT8951_ROTATE_180;
-    } else {
-        this->m_rotate = IT8951_ROTATE_270;
-    }
-
-    if (this->m_rotate == IT8951_ROTATE_0 || this->m_rotate == IT8951_ROTATE_180) {
-        this->m_direction = IT8951_DIRECTION_PORTRAIT;
-        this->device_info_.usPanelW = M5EPD_PANEL_W;
-        this->device_info_.usPanelH = M5EPD_PANEL_H;
-    } else {
-        this->m_direction = IT8951_DIRECTION_LANDSCAPE;
-        this->device_info_.usPanelW = M5EPD_PANEL_H;
-        this->device_info_.usPanelH = M5EPD_PANEL_W;
-    }
-}
-
 void IT8951ESensor::set_area(uint16_t x, uint16_t y, uint16_t w,
                                   uint16_t h) {
     uint16_t args[5];
-    args[0] = (this->m_endian_type << 8 | this->m_pix_bpp << 4 | this->m_rotate);
+
+    args[0] = (this->m_endian_type << 8 | this->m_pix_bpp << 4);
     args[1] = x;
     args[2] = y;
     args[3] = w;
@@ -177,7 +145,7 @@ void IT8951ESensor::check_busy(uint32_t timeout) {
 }
 
 void IT8951ESensor::update_area(uint16_t x, uint16_t y, uint16_t w,
-                                     uint16_t h, m5epd_update_mode_t mode) {
+                                     uint16_t h, update_mode_e mode) {
     if (mode == UPDATE_MODE_NONE) {
         return;
     }
@@ -188,42 +156,21 @@ void IT8951ESensor::update_area(uint16_t x, uint16_t y, uint16_t w,
 
     this->check_busy();
 
-    if (x + w > this->get_width_internal()) {
-        w = this->get_width_internal() - x;
+    if (x + w > this->get_width()) {
+        w = this->get_width() - x;
     }
-    if (y + h > this->get_height_internal()) {
-        h = this->get_height_internal() - y;
-    }
-
-    uint16_t tmp_x = x;
-    uint16_t tmp_y = y;
-    switch (this->m_rotate) {
-        case IT8951_ROTATE_0:
-            tmp_x = x;
-            tmp_y = y;
-            break;
-        case IT8951_ROTATE_90:
-            tmp_x = y;
-            tmp_y = M5EPD_PANEL_H - w - x;
-            break;
-        case IT8951_ROTATE_180:
-            tmp_x = M5EPD_PANEL_W - w - x;
-            tmp_y = M5EPD_PANEL_H - h - y;
-            break;
-        case IT8951_ROTATE_270:
-            tmp_x = M5EPD_PANEL_W - h - y;
-            tmp_y = x;
-            break;
+    if (y + h > this->get_height()) {
+        h = this->get_height() - y;
     }
 
     uint16_t args[7];
-    args[0] = tmp_x;
-    args[1] = tmp_y;
+    args[0] = x;
+    args[1] = y;
     args[2] = w;
     args[3] = h;
     args[4] = mode;
-    args[5] = this->device_info_.usImgBufAddrL;
-    args[6] = this->device_info_.usImgBufAddrH;
+    args[5] = this->IT8951DevAll[this->model_].devInfo.usImgBufAddrL;
+    args[6] = this->IT8951DevAll[this->model_].devInfo.usImgBufAddrH;
 
     this->write_args(IT8951_I80_CMD_DPY_BUF_AREA, args, 7);
 }
@@ -236,11 +183,11 @@ void IT8951ESensor::reset(void) {
     delay(100);
 }
 
-uint32_t IT8951ESensor::get_buffer_length_() { return this->get_width_internal() * this->get_height_internal(); }
+uint32_t IT8951ESensor::get_buffer_length_() { return this->get_width() * this->get_height(); }
 
-void IT8951ESensor::get_device_info(IT8951DevInfo *info) {
+void IT8951ESensor::get_device_info(struct IT8951DevInfo_s *info) {
     this->write_command(IT8951_I80_CMD_GET_DEV_INFO);
-    this->read_words(info, sizeof(IT8951DevInfo)/2);//Polling HRDY for each words(2-bytes) if possible
+    this->read_words(info, sizeof(struct IT8951DevInfo_s)/2); // Polling HRDY for each words(2-bytes) if possible
 }
 
 uint16_t IT8951ESensor::get_vcom() {
@@ -268,17 +215,8 @@ void IT8951ESensor::setup() {
 
     this->busy_pin_->pin_mode(gpio::FLAG_INPUT);
 
-    this->get_device_info(&(this->device_info_));
+//    this->get_device_info(&(this->device_info_));
     this->dump_config();
-    if (M5EPD_PANEL_ADDRL != this->device_info_.usImgBufAddrL || M5EPD_PANEL_ADDRH != this->device_info_.usImgBufAddrH) {
-        // Sometime it fails to read the device info
-        ESP_LOGE(TAG, "FAILED to read panel image buffer address, try hard...");
-        this->device_info_.usImgBufAddrL = M5EPD_PANEL_ADDRL;
-        this->device_info_.usImgBufAddrH = M5EPD_PANEL_ADDRH;
-    }
-    // Ensure all variables are correctly initialized
-    // Because set_rotation() can be called before setup()
-    this->set_rotation(this->m_rotate);
 
     this->write_command(IT8951_TCON_SYS_RUN);
 
@@ -301,6 +239,8 @@ void IT8951ESensor::setup() {
 
     this->init_internal_(this->get_buffer_length_());
 
+    this->clear(true);
+
     ESP_LOGCONFIG(TAG, "Init Done.");
 }
 
@@ -310,18 +250,17 @@ void IT8951ESensor::setup() {
  * @param w width of gram, >>> Must be a multiple of 4 <<<
  * @param h height of gram
  * @param gram 4bpp garm data
- * @retval m5epd_err_t
  */
 void IT8951ESensor::write_buffer_to_display(uint16_t x, uint16_t y, uint16_t w,
                                             uint16_t h, const uint8_t *gram) {
     this->m_endian_type = IT8951_LDIMG_B_ENDIAN;
     this->m_pix_bpp     = IT8951_4BPP;
-    if (x > this->get_width_internal() || y > this->get_height_internal()) {
+    if (x > this->get_width() || y > this->get_height()) {
         ESP_LOGE(TAG, "Pos (%d, %d) out of bounds.", x, y);
         return;
     }
 
-    this->set_target_memory_addr(this->device_info_.usImgBufAddrL | (this->device_info_.usImgBufAddrH << 16));
+    this->set_target_memory_addr(this->IT8951DevAll[this->model_].devInfo.usImgBufAddrL, this->IT8951DevAll[this->model_].devInfo.usImgBufAddrH);
     this->set_area(x, y, w, h);
 
     uint32_t pos = 0;
@@ -354,17 +293,15 @@ void IT8951ESensor::write_display() {
 
 
 /** @brief Clear graphics buffer
- * @param init Screen initialization, If is 0, clear the buffer without
- * initializing
- * @retval m5epd_err_t
+ * @param init Screen initialization, If is 0, clear the buffer without initializing
  */
 void IT8951ESensor::clear(bool init) {
     this->m_endian_type = IT8951_LDIMG_L_ENDIAN;
     this->m_pix_bpp     = IT8951_4BPP;
 
-    this->set_target_memory_addr(this->device_info_.usImgBufAddrL | (this->device_info_.usImgBufAddrH << 16));
-    this->set_area(0, 0, this->get_width_internal(), this->get_height_internal());    
-    uint32_t looping = (this->get_width_internal() * this->get_height_internal()) >> 2;
+    this->set_target_memory_addr(this->IT8951DevAll[this->model_].devInfo.usImgBufAddrL, this->IT8951DevAll[this->model_].devInfo.usImgBufAddrH);
+    this->set_area(0, 0, this->get_width(), this->get_height());
+    uint32_t looping = (this->get_width() * this->get_height()) >> 2;
 
     for (uint32_t x = 0; x < looping; x++) {
         this->enable();
@@ -376,18 +313,20 @@ void IT8951ESensor::clear(bool init) {
     this->write_command(IT8951_TCON_LD_IMG_END);
 
     if (init) {
-        this->update_area(0, 0, this->get_width_internal(), this->get_height_internal(), UPDATE_MODE_INIT);
+        this->update_area(0, 0, this->get_width(), this->get_height(), UPDATE_MODE_INIT);
     }
 }
 
 void IT8951ESensor::update() {
-    this->do_update_();
-    this->write_display();
+    if (this->is_ready()) {
+        this->do_update_();
+        this->write_display();
+    }
 }
 
 void HOT IT8951ESensor::draw_absolute_pixel_internal(int x, int y, Color color) {
-    if (x >= this->get_width_internal() || y >= this->get_height_internal() || x < 0 || y < 0) {
-        // Removed to avoid too much logging    
+    if (x >= this->get_width() || y >= this->get_height() || x < 0 || y < 0) {
+        // Removed to avoid too much logging
         // ESP_LOGE(TAG, "Drawing outside the screen size!");
         return;
     }
@@ -405,7 +344,7 @@ void HOT IT8951ESensor::draw_absolute_pixel_internal(int x, int y, Color color) 
     }
 
     uint32_t internal_color = color.raw_32 & 0x0F;
-    uint16_t _bytewidth = this->get_width_internal() >> 1;
+    uint16_t _bytewidth = this->get_width() >> 1;
     int32_t index = y * _bytewidth + (x >> 1);
 
     if (x & 0x1) {
@@ -418,20 +357,20 @@ void HOT IT8951ESensor::draw_absolute_pixel_internal(int x, int y, Color color) 
 }
 
 int IT8951ESensor::get_width_internal() {
-    return this->device_info_.usPanelW;
+    return this->IT8951DevAll[this->model_].devInfo.usPanelW;
 }
 
 int IT8951ESensor::get_height_internal() {
-    return this->device_info_.usPanelH;
+    return this->IT8951DevAll[this->model_].devInfo.usPanelH;
 }
 
 void IT8951ESensor::dump_config() {
     ESP_LOGI(TAG, "Height:%d Width:%d LUT: %s, FW: %s, Mem:%x",
-        this->device_info_.usPanelH, 
-        this->device_info_.usPanelW,
-        this->device_info_.usLUTVersion,
-        this->device_info_.usFWVersion,
-        this->device_info_.usImgBufAddrL | (this->device_info_.usImgBufAddrH << 16)
+        this->IT8951DevAll[this->model_].devInfo.usPanelH,
+        this->IT8951DevAll[this->model_].devInfo.usPanelW,
+        this->IT8951DevAll[this->model_].devInfo.usLUTVersion,
+        this->IT8951DevAll[this->model_].devInfo.usFWVersion,
+        this->IT8951DevAll[this->model_].devInfo.usImgBufAddrL | (this->IT8951DevAll[this->model_].devInfo.usImgBufAddrH << 16)
     );
 }
 

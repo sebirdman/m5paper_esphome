@@ -27,7 +27,7 @@ class BM8563 : public time::RealTimeClock, public i2c::I2CDevice {
     void setup() override;
     void update() override;
     void dump_config() override;
-    
+
     void set_sleep_duration(uint32_t time_ms);
     void write_time();
     void read_time();

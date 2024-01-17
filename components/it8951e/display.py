@@ -12,6 +12,7 @@ from esphome.const import (
     CONF_BUSY_PIN,
     CONF_PAGES,
     CONF_LAMBDA,
+    CONF_MODEL,
     CONF_REVERSED,
 )
 
@@ -22,6 +23,12 @@ IT8951ESensor = it8951e_ns.class_(
     'IT8951ESensor', cg.PollingComponent, spi.SPIDevice, display.DisplayBuffer, display.Display
 )
 ClearAction = it8951e_ns.class_("ClearAction", automation.Action)
+
+it8951eModel = it8951e_ns.enum("it8951eModel")
+
+MODELS = {
+    "M5EPD": it8951eModel.M5EPD
+}
 
 CONFIG_SCHEMA = cv.All(
     display.FULL_DISPLAY_SCHEMA.extend(
@@ -35,15 +42,19 @@ CONFIG_SCHEMA = cv.All(
                 cv.positive_time_period_milliseconds,
                 cv.Range(max=core.TimePeriod(milliseconds=500)),
             ),
+            cv.Optional(CONF_MODEL, default="M5EPD"): cv.enum(
+                MODELS, upper=True, space="_"
+            ),
         }
     )
     .extend(cv.polling_component_schema("1s"))
     .extend(spi.spi_device_schema()),
     cv.has_at_most_one_key(CONF_PAGES, CONF_LAMBDA),
+    cv.only_with_arduino,
 )
 
 @automation.register_action(
-    "IT8951E.clear",
+    "it8951e.clear",
     ClearAction,
     automation.maybe_simple_id(
         {
@@ -51,7 +62,7 @@ CONFIG_SCHEMA = cv.All(
         }
     ),
 )
-async def bm8563_read_time_to_code(config, action_id, template_arg, args):
+async def it8951e_clear_to_code(config, action_id, template_arg, args):
     var = cg.new_Pvariable(action_id, template_arg)
     await cg.register_parented(var, config[CONF_ID])
     return var
@@ -63,6 +74,8 @@ async def to_code(config):
     await display.register_display(var, config)
     await spi.register_spi_device(var, config)
 
+    if CONF_MODEL in config:
+        cg.add(var.set_model(config[CONF_MODEL]))
     if CONF_LAMBDA in config:
         lambda_ = await cg.process_lambda(
             config[CONF_LAMBDA], [(display.DisplayRef, "it")], return_type=cg.void
