@@ -146,7 +146,7 @@ void IT8951ESensor::check_busy(uint32_t timeout) {
 
 void IT8951ESensor::update_area(uint16_t x, uint16_t y, uint16_t w,
                                      uint16_t h, update_mode_e mode) {
-    if (mode == UPDATE_MODE_NONE) {
+    if (mode == update_mode_e::UPDATE_MODE_NONE) {
         return;
     }
 
@@ -156,11 +156,11 @@ void IT8951ESensor::update_area(uint16_t x, uint16_t y, uint16_t w,
 
     this->check_busy();
 
-    if (x + w > this->get_width()) {
-        w = this->get_width() - x;
+    if (x + w > this->get_width_internal()) {
+        w = this->get_width_internal() - x;
     }
-    if (y + h > this->get_height()) {
-        h = this->get_height() - y;
+    if (y + h > this->get_height_internal()) {
+        h = this->get_height_internal() - y;
     }
 
     uint16_t args[7];
@@ -183,7 +183,7 @@ void IT8951ESensor::reset(void) {
     delay(100);
 }
 
-uint32_t IT8951ESensor::get_buffer_length_() { return this->get_width() * this->get_height(); }
+uint32_t IT8951ESensor::get_buffer_length_() { return this->get_width_internal() * this->get_height_internal(); }
 
 void IT8951ESensor::get_device_info(struct IT8951DevInfo_s *info) {
     this->write_command(IT8951_I80_CMD_GET_DEV_INFO);
@@ -239,8 +239,6 @@ void IT8951ESensor::setup() {
 
     this->init_internal_(this->get_buffer_length_());
 
-    this->clear(true);
-
     ESP_LOGCONFIG(TAG, "Init Done.");
 }
 
@@ -285,7 +283,7 @@ void IT8951ESensor::write_buffer_to_display(uint16_t x, uint16_t y, uint16_t w,
 void IT8951ESensor::write_display() {
     this->write_command(IT8951_TCON_SYS_RUN);
     this->write_buffer_to_display(0, 0, this->max_x, this->max_y, this->buffer_);
-    this->update_area(0, 0, this->max_x, this->max_y, UPDATE_MODE_GC16);
+    this->update_area(0, 0, this->max_x, this->max_y, update_mode_e::UPDATE_MODE_GC16);
     this->max_x = 0;
     this->max_y = 0;
     this->write_command(IT8951_TCON_SLEEP);
@@ -300,8 +298,8 @@ void IT8951ESensor::clear(bool init) {
     this->m_pix_bpp     = IT8951_4BPP;
 
     this->set_target_memory_addr(this->IT8951DevAll[this->model_].devInfo.usImgBufAddrL, this->IT8951DevAll[this->model_].devInfo.usImgBufAddrH);
-    this->set_area(0, 0, this->get_width(), this->get_height());
-    uint32_t looping = (this->get_width() * this->get_height()) >> 2;
+    this->set_area(0, 0, this->get_width_internal(), this->get_height_internal());
+    uint32_t looping = (this->get_width_internal() * this->get_height_internal()) >> 2;
 
     for (uint32_t x = 0; x < looping; x++) {
         this->enable();
@@ -313,7 +311,7 @@ void IT8951ESensor::clear(bool init) {
     this->write_command(IT8951_TCON_LD_IMG_END);
 
     if (init) {
-        this->update_area(0, 0, this->get_width(), this->get_height(), UPDATE_MODE_INIT);
+        this->update_area(0, 0, this->get_width_internal(), this->get_height_internal(), update_mode_e::UPDATE_MODE_INIT);
     }
 }
 
@@ -325,7 +323,7 @@ void IT8951ESensor::update() {
 }
 
 void HOT IT8951ESensor::draw_absolute_pixel_internal(int x, int y, Color color) {
-    if (x >= this->get_width() || y >= this->get_height() || x < 0 || y < 0) {
+    if (x >= this->get_width_internal() || y >= this->get_height_internal() || x < 0 || y < 0) {
         // Removed to avoid too much logging
         // ESP_LOGE(TAG, "Drawing outside the screen size!");
         return;
@@ -344,7 +342,7 @@ void HOT IT8951ESensor::draw_absolute_pixel_internal(int x, int y, Color color) 
     }
 
     uint32_t internal_color = color.raw_32 & 0x0F;
-    uint16_t _bytewidth = this->get_width() >> 1;
+    uint16_t _bytewidth = this->get_width_internal() >> 1;
     int32_t index = y * _bytewidth + (x >> 1);
 
     if (x & 0x1) {
@@ -365,9 +363,13 @@ int IT8951ESensor::get_height_internal() {
 }
 
 void IT8951ESensor::dump_config() {
-    ESP_LOGI(TAG, "Height:%d Width:%d LUT: %s, FW: %s, Mem:%x",
-        this->IT8951DevAll[this->model_].devInfo.usPanelH,
-        this->IT8951DevAll[this->model_].devInfo.usPanelW,
+    LOG_DISPLAY("", "IT8951E", this);
+    switch (this->model_) {
+    case it8951eModel::M5EPD:
+        ESP_LOGCONFIG(TAG, "  Model: M5EPD");
+        break;
+    }
+    ESP_LOGCONFIG(TAG, "LUT: %s, FW: %s, Mem:%x",
         this->IT8951DevAll[this->model_].devInfo.usLUTVersion,
         this->IT8951DevAll[this->model_].devInfo.usFWVersion,
         this->IT8951DevAll[this->model_].devInfo.usImgBufAddrL | (this->IT8951DevAll[this->model_].devInfo.usImgBufAddrH << 16)

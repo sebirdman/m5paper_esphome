@@ -2,6 +2,11 @@ esphome:
   name: ${device_id}
   name_add_mac_suffix: true
   on_boot:
+    - priority: 220.0
+      then:
+        - it8951e.clear
+        - delay: 100ms
+        - component.update: m5paper_display
     - priority: -100.0
       then:
         - delay: 10s
