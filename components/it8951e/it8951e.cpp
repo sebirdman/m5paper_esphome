@@ -247,7 +247,7 @@ void IT8951ESensor::setup() {
  * @param y Update Y coordinate
  * @param w width of gram, >>> Must be a multiple of 4 <<<
  * @param h height of gram
- * @param gram 4bpp garm data
+ * @param gram 4bpp gram data
  */
 void IT8951ESensor::write_buffer_to_display(uint16_t x, uint16_t y, uint16_t w,
                                             uint16_t h, const uint8_t *gram) {

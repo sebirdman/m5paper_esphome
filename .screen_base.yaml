@@ -508,14 +508,16 @@ time:
 m5paper:
   battery_power_pin: GPIO5
   main_power_pin: GPIO2
-  update_interval: 10s
-  battery_voltage:
-    name: ${device_name} battery voltage
-    id: m5paper_battery_voltage
-    device_class: "voltage"
-    state_class: "measurement"
 
 sensor:
+  - platform: adc
+    pin: GPIO35
+    name: ${device_name} battery voltage
+    id: m5paper_battery_voltage
+    update_interval: 10s
+    attenuation: 11db
+    filters:
+      - multiply: 2 #1,27272727
   - platform: sht3xd
     temperature:
       name: ${device_name} temperature
@@ -565,7 +567,7 @@ sensor:
     id: outdoor_wind_strength
     entity_id: ${outdoor_wind_strength}
   - platform: homeassistant
-    name: Indoor temprature
+    name: Indoor temperature
     id: indoor_temperature
     entity_id: ${indoor_temperature}
   - platform: homeassistant
