@@ -13,7 +13,7 @@ esphome:
         - component.update: m5paper_display
 
 esp32:
-  board: esp32dev
+  board: m5stack-grey
   framework:
     type: arduino
 
@@ -511,6 +511,7 @@ m5paper:
 
 sensor:
   - platform: adc
+    disabled_by_default: true
     pin: GPIO35
     name: ${device_name} battery voltage
     id: m5paper_battery_voltage
@@ -543,13 +544,12 @@ sensor:
     update_interval: 20s
     lambda: |-
       constexpr float min_level = 3.52;
-      constexpr float max_level = 4.1;
-      float level = ((id(m5paper_battery_voltage).state - min_level) / (max_level - min_level)) * 100.00;
-      if (level < 0)
-        return 0;
-      if (level > 100)
-        return 100;
-      return level;
+      constexpr float max_level = 4.15;
+      return ((id(m5paper_battery_voltage).state - min_level) / (max_level - min_level)) * 100.00;
+    filters:
+      - clamp:
+          min_value: 0
+          max_value: 100
   - platform: homeassistant
     name: Outdoor temperature
     id: outdoor_temperature

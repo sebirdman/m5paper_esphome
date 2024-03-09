@@ -10,7 +10,8 @@ namespace m5paper {
 class M5PaperComponent : public Component {
     void setup() override;
     void dump_config() override;
-    float get_setup_priority() const override { return setup_priority::HARDWARE; };
+    /* Very early setup as takes care of powering other components */
+    float get_setup_priority() const override { return setup_priority::BUS; };
 
 public:
     void set_battery_power_pin(GPIOPin *power) { this->battery_power_pin_ = power; }
