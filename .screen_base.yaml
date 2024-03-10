@@ -17,6 +17,9 @@ esp32:
   framework:
     type: arduino
 
+external_components:
+  - source: github://Passific/m5paper_esphome
+
 # Enable logging
 logger:
   level: DEBUG
