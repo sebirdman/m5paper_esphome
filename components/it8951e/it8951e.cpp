@@ -368,6 +368,9 @@ void IT8951ESensor::dump_config() {
     case it8951eModel::M5EPD:
         ESP_LOGCONFIG(TAG, "  Model: M5EPD");
         break;
+    default:
+        ESP_LOGCONFIG(TAG, "  Model: unkown");
+        break;
     }
     ESP_LOGCONFIG(TAG, "LUT: %s, FW: %s, Mem:%x",
         this->IT8951DevAll[this->model_].devInfo.usLUTVersion,

@@ -88,7 +88,9 @@ void BM8563::read_time() {
                          .day_of_month = uint8_t(BM8563_DateStruct.day),
                          .day_of_year = 1,  // ignored by recalc_timestamp_utc(false)
                          .month = uint8_t(BM8563_DateStruct.month),
-                         .year = uint16_t(BM8563_DateStruct.year)
+                         .year = uint16_t(BM8563_DateStruct.year),
+                         .is_dst = false,  // ignored by recalc_timestamp_utc()
+                         .timestamp = 0  // result
                          };
   rtc_time.recalc_timestamp_utc(false);
   time::RealTimeClock::synchronize_epoch_(rtc_time.timestamp);
