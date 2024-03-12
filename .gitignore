@@ -4,6 +4,7 @@
 .DS_Store
 /.esphome/
 /secrets.yaml
-my_tablet.yaml
+/buildlog.txt
+living_room_screen.yaml
 fonts
 __pycache__

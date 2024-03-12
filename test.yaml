@@ -1,0 +1,28 @@
+﻿substitutions:
+  device_name: Test status screen
+  device_id: test-screen
+  # Home assistant sensors
+  # Weather conditions
+  weather_conditions: weather.my_home
+  # Outdoor sensors
+  outdoor_temperature: sensor.outdoor_temperature
+  outdoor_humidity: sensor.outdoor_humidity
+  outdoor_rainfall: sensor.outdoor_rainfall
+  outdoor_wind_strength: sensor.outdoor_wind_strength
+  # Indoor sensors
+  indoor_temperature: sensor.indoor_temperature
+  indoor_humidity: sensor.indoor_humidity
+  indoor_pressure: sensor.indoor_pressure
+  indoor_co2: sensor.indoor_co2
+  # Alarms
+  # Any counter, will be shown as number 0..9
+  lights_counter: sensor.lights_counter
+  # Alarmo status
+  alarmo_status: alarm_control_panel.alarmo
+  # Radiation alarm
+  radiation_alarm: binary_sensor.radiation_alarm
+
+web_server:
+ 
+# Include main functionality file
+<<: !include .screen_base.yaml
